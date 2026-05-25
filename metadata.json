@@ -1,0 +1,6 @@
+{
+  "name": "Background Remover",
+  "description": "An interactive background removal web application like remove.bg, featuring responsive sliding comparison, solid color and image backgrounds, full manual brush eraser/restore, and batch processing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
