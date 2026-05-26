@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Rich warm gradient matching the orange and red theme of bgi remove -->
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffedd5" />
+      <stop offset="10%" stop-color="#ff7e22" />
+      <stop offset="100%" stop-color="#dc2626" />
+    </linearGradient>
+  </defs>
+
+  <!-- Clean rounded background squircle -->
+  <rect width="512" height="512" rx="120" fill="url(#iconGradient)"/>
+
+  <!-- High-contrast scissors vector layout centered -->
+  <g fill="none" stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" transform="translate(6, 6)">
+    <!-- Top scissor handle -->
+    <circle cx="140" cy="140" r="65" />
+    <!-- Bottom scissor handle -->
+    <circle cx="140" cy="360" r="65" />
+    
+    <!-- Crossed cutting blades -->
+    <line x1="220" y1="184" x2="440" y2="400" />
+    <line x1="220" y1="316" x2="440" y2="100" />
+    
+    <!-- Pivot screw point -->
+    <circle cx="290" cy="250" r="16" fill="#ffffff" stroke="none" />
+  </g>
+</svg>
