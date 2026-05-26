@@ -948,9 +948,14 @@ export default function App() {
                 </span>
               </h1>
               <p className="mt-4 text-base sm:text-lg text-neutral-500 max-w-2xl mx-auto font-medium">
-                BGI Remove is an AI-powered background remover tool. 100%
-                automatic and free. All rendering runs entirely locally on your
-                processor, so your files remain private and secure.
+                BGI Remove is an AI-powered background remover tool for JPG,
+                PNG, and WebP images. 100% automatic and free, with all
+                rendering performed locally in your browser so your files remain
+                private and secure.
+              </p>
+              <p className="mt-4 text-sm sm:text-base text-neutral-500 max-w-2xl mx-auto font-medium">
+                Try it now with any photo and instantly download a transparent
+                PNG, solid color backdrop, or custom background image.
               </p>
             </div>
 
