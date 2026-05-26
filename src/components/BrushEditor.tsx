@@ -39,12 +39,16 @@ export default function BrushEditor({
   // Pre-load images
   useEffect(() => {
     const origImg = new Image();
-    origImg.crossOrigin = 'anonymous';
+    if (originalUrl.startsWith('http') && !originalUrl.startsWith(window.location.origin)) {
+      origImg.crossOrigin = 'anonymous';
+    }
     origImg.src = originalUrl;
     originalImgRef.current = origImg;
 
     const procImg = new Image();
-    procImg.crossOrigin = 'anonymous';
+    if (processedUrl.startsWith('http') && !processedUrl.startsWith(window.location.origin)) {
+      procImg.crossOrigin = 'anonymous';
+    }
     procImg.src = processedUrl;
     processedImgRef.current = procImg;
 

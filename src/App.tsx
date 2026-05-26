@@ -40,6 +40,18 @@ import {
   BackgroundPreset 
 } from './types';
 
+const getSafeCorsUrl = (url: string): string => {
+  if (!url) return '';
+  if (url.startsWith('data:') || url.startsWith('blob:')) {
+    return url;
+  }
+  const cb = `cb=${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  if (url.includes('?')) {
+    return `${url}&${cb}`;
+  }
+  return `${url}?${cb}`;
+};
+
 export default function App() {
   // Primary States
   const [currentImage, setCurrentImage] = useState<ProcessedImage | null>(null);
@@ -191,13 +203,17 @@ export default function App() {
   const applyMaskToOriginal = (originalFile: File | string, cutoutBlob: Blob): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const originalImg = new Image();
-      originalImg.crossOrigin = 'anonymous';
+      const originalUrlStr = typeof originalFile === 'string' ? getSafeCorsUrl(originalFile) : URL.createObjectURL(originalFile);
+      if (originalUrlStr.startsWith('http') && !originalUrlStr.startsWith(window.location.origin)) {
+        originalImg.crossOrigin = 'anonymous';
+      }
       
       const cutoutImg = new Image();
-      cutoutImg.crossOrigin = 'anonymous';
+      const cutoutUrlStr = URL.createObjectURL(cutoutBlob);
+      // Local Blob URLs must NOT have crossOrigin set to avoid browser security blocking.
       
-      originalImg.src = typeof originalFile === 'string' ? originalFile : URL.createObjectURL(originalFile);
-      cutoutImg.src = URL.createObjectURL(cutoutBlob);
+      originalImg.src = originalUrlStr;
+      cutoutImg.src = cutoutUrlStr;
       
       let loadedCount = 0;
       const onImageLoad = () => {
@@ -246,8 +262,11 @@ export default function App() {
   const resizeImageToMax = (file: File | string, maxDimension: number): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = typeof file === 'string' ? file : URL.createObjectURL(file);
+      const urlStr = typeof file === 'string' ? getSafeCorsUrl(file) : URL.createObjectURL(file);
+      if (urlStr.startsWith('http') && !urlStr.startsWith(window.location.origin)) {
+        img.crossOrigin = 'anonymous';
+      }
+      img.src = urlStr;
       img.onload = () => {
         let width = img.width;
         let height = img.height;
@@ -324,7 +343,7 @@ export default function App() {
       originalFile: imageSrc instanceof File ? imageSrc : undefined,
       status: 'loading',
       progress: 0,
-      progressStep: 'Uploading image & initializing...'
+      progressStep: 'Uploading, please wait...'
     };
 
     setCurrentImage(newImage);
@@ -347,13 +366,13 @@ export default function App() {
       let resizeDimension = 0;
       if (qualityMode === 'isnet_quint8') {
         resizeDimension = 800;
-        setCurrentImage(prev => prev ? { ...prev, progressStep: 'Optimizing image resolution...' } : null);
+        setCurrentImage(prev => prev ? { ...prev, progressStep: 'Uploading, please wait...' } : null);
       } else if (qualityMode === 'isnet_fp16') {
         resizeDimension = 1600;
-        setCurrentImage(prev => prev ? { ...prev, progressStep: 'Optimizing image resolution...' } : null);
+        setCurrentImage(prev => prev ? { ...prev, progressStep: 'Uploading, please wait...' } : null);
       } else {
         resizeDimension = 2800; // Cap Studio HD at safe 2800px so it never triggers browser WASM memory crashes
-        setCurrentImage(prev => prev ? { ...prev, progressStep: 'Optimizing high-definition image...' } : null);
+        setCurrentImage(prev => prev ? { ...prev, progressStep: 'Uploading, please wait...' } : null);
       }
 
       try {
@@ -368,16 +387,16 @@ export default function App() {
         rescale: rescaleMode, // Override scale normalization
         progress: (key: string, current: number, total: number) => {
           const percent = Math.round((current / total) * 100);
-          let step = 'Preparing AI sandbox engine...';
+          let step = 'Uploading, please wait...';
           
           if (key.includes('fetch')) {
-            step = 'Loading AI model weights...';
+            step = 'Uploading, please wait...';
           } else if (key.includes('compute')) {
             step = 'Removing background...';
           } else if (key.includes('isolate')) {
             step = 'Removing background...';
           } else {
-            step = 'Perfecting transparency edges...';
+            step = 'Removing background...';
           }
 
           setCurrentImage(prev => {
@@ -395,7 +414,7 @@ export default function App() {
       const maskedBlob = await removeBackground(processedSrcForAI as any, config);
       
       // Restore full pristine high-resolution quality by overlaying mask on original image!
-      setCurrentImage(prev => prev ? { ...prev, progressStep: 'Polishing high-resolution details...' } : null);
+      setCurrentImage(prev => prev ? { ...prev, progressStep: 'Removing background...' } : null);
       
       let finalBlob = maskedBlob;
       try {
@@ -438,7 +457,7 @@ export default function App() {
         return {
           ...prev,
           progress: 40,
-          progressStep: 'Applying backup transparency filter...'
+          progressStep: 'Removing background...'
         };
       });
 
@@ -451,8 +470,11 @@ export default function App() {
   // Safe Fallback Cutout: generates a beautiful transparent overlay so user can still manually refine
   const setupFallbackCutout = (imgUrl: string, uniqueId: string, originalName: string) => {
     const rawImg = new Image();
-    rawImg.crossOrigin = 'anonymous';
-    rawImg.src = imgUrl;
+    const safeUrl = getSafeCorsUrl(imgUrl);
+    if (safeUrl.startsWith('http') && !safeUrl.startsWith(window.location.origin)) {
+      rawImg.crossOrigin = 'anonymous';
+    }
+    rawImg.src = safeUrl;
     
     rawImg.onload = () => {
       const fallbackCanvas = document.createElement('canvas');
@@ -494,7 +516,7 @@ export default function App() {
           ...prev,
           status: 'completed',
           progress: 100,
-          progressStep: 'Contour Loaded!',
+          progressStep: 'Background removed successfully!',
           processedUrl: fallbackUrl,
           width: rawImg.naturalWidth || 600,
           height: rawImg.naturalHeight || 600
@@ -676,7 +698,9 @@ export default function App() {
     // Heavy-path: Merge backdrops via HTML Canvas
     const canvas = document.createElement('canvas');
     const fgImg = new Image();
-    fgImg.crossOrigin = 'anonymous';
+    if (foregroundUrl.startsWith('http') && !foregroundUrl.startsWith(window.location.origin)) {
+      fgImg.crossOrigin = 'anonymous';
+    }
     fgImg.src = foregroundUrl;
 
     setCurrentImage(prev => prev ? { ...prev, progressStep: 'Combining backdrops...' } : null);
@@ -728,7 +752,9 @@ export default function App() {
         drawForegroundAndDownload();
       } else if (editorSettings.backgroundType === 'image') {
         const bgImg = new Image();
-        bgImg.crossOrigin = 'anonymous';
+        if (editorSettings.imageValue.startsWith('http') && !editorSettings.imageValue.startsWith(window.location.origin)) {
+          bgImg.crossOrigin = 'anonymous';
+        }
         bgImg.src = editorSettings.imageValue;
 
         bgImg.onload = () => {
@@ -1143,6 +1169,8 @@ export default function App() {
               </div>
             </div>
 
+
+
           </section>
         )}
 
@@ -1270,14 +1298,10 @@ export default function App() {
 
                   <div className="space-y-2">
                     <h3 className="text-base font-bold text-neutral-900">
-                      {currentImage.progressStep.includes('Uploading') ? 'Uploading Image' :
-                       currentImage.progressStep.includes('Loading') ? 'Loading AI Model' :
-                       currentImage.progressStep.includes('Preparing') ? 'Initializing Sandbox' :
-                       currentImage.progressStep.includes('Removing') ? 'Removing Background' : 
-                       'Removing Background'}
+                      {currentImage.progressStep.includes('Uploading') ? 'Uploading, please wait...' : 'Removing background...'}
                     </h3>
-                    <p className="text-xs text-neutral-400 font-mono font-medium max-w-xs mx-auto animate-pulse">
-                      {currentImage.progressStep}
+                    <p className="text-xs text-neutral-400 font-sans font-medium max-w-xs mx-auto animate-pulse">
+                      {currentImage.progressStep.includes('Uploading') ? 'Please wait...' : 'Almost done...'}
                     </p>
                   </div>
 
@@ -1916,7 +1940,7 @@ export default function App() {
               All Premium HD Features Unlocked for Free Today
             </h3>
             <p className="text-xs sm:text-sm text-neutral-400 font-medium max-w-xl mx-auto leading-relaxed mb-6">
-              Help us grow remove bgi! Stash your email to reserve your permanent beta access spot and receive instant notices whenever we drop new local edge segmentations models.
+              Help us grow bgi remove! Stash your email to reserve your permanent beta access spot and receive instant notices whenever we drop new local edge segmentations models.
             </p>
 
             {isWaitlistSubmitted ? (

@@ -16,6 +16,7 @@ export default function CompareSlider({
 }: CompareSliderProps) {
   const [sliderPosition, setSliderPosition] = useState(50); // percentage (0-100)
   const [isDragging, setIsDragging] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleMove = (clientX: number) => {
@@ -35,6 +36,24 @@ export default function CompareSlider({
     if (e.touches.length === 0) return;
     handleMove(e.touches[0].clientX);
   };
+
+  // Setup ResizeObserver to track container width reactively and responsively
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    setContainerWidth(containerRef.current.getBoundingClientRect().width);
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(containerRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -83,10 +102,10 @@ export default function CompareSlider({
         }}
       >
         <div
-          className="relative h-full w-full"
+          className="relative h-full"
           style={{
             // Keep the inner contents full width so they match the image underneath exactly
-            width: containerRef.current?.getBoundingClientRect().width || '100vw',
+            width: containerWidth ? `${containerWidth}px` : '100%',
           }}
         >
           {/* Transparent Grid Pattern if requested */}
@@ -123,7 +142,7 @@ export default function CompareSlider({
               draggable={false}
               referrerPolicy="no-referrer"
               style={{
-                width: containerRef.current?.getBoundingClientRect().width || '100%',
+                width: containerWidth ? `${containerWidth}px` : '100%',
               }}
             />
           </div>

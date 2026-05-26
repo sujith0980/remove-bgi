@@ -19,7 +19,7 @@ export default function Header({ onNavClick, activeSection = 'upload' }: HeaderP
           <div>
             <div className="flex items-center space-x-1.5">
               <span className="font-sans font-extrabold text-xl tracking-tight text-neutral-900">
-                remove<span className="text-orange-500"> bgi</span>
+                bgi<span className="text-orange-500"> remove</span>
               </span>
               <span className="rounded-full bg-orange-100 px-1.5 py-0.5 text-[10px] font-bold text-orange-600 uppercase tracking-wide">
                 Free Beta

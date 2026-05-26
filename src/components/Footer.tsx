@@ -41,7 +41,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-neutral-200/60 pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-neutral-400">
-          <p>© 2026 remove bgi. All rights reserved. Created for on-demand background removal.</p>
+          <p>© 2026 bgi remove. All rights reserved. Created for on-demand background removal.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <span className="hover:text-neutral-600">Local Sandbox</span>
             <span>•</span>
