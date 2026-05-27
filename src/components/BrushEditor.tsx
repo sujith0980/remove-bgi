@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Eraser, Scissors, Undo, RotateCcw, Check, X, ZoomIn, ZoomOut, Maximize, Sparkles, Sliders } from 'lucide-react';
+import { Eraser, Scissors, Undo, RotateCcw, Check, X, ZoomIn, ZoomOut, Maximize, Wand2, Sliders } from 'lucide-react';
 
 interface BrushEditorProps {
   originalUrl: string;
@@ -471,7 +471,7 @@ export default function BrushEditor({
                   }`}
                   id="editor-btn-wand"
                 >
-                  <Sparkles className="h-5 w-5 mb-1.5" />
+                  <Wand2 className="h-5 w-5 mb-1.5" />
                   <span className="font-bold text-[10px] flex items-center">Smart Wand</span>
                   <span className="text-[8px] text-sky-500 font-extrabold mt-0.5 leading-tight text-center">1-Click Auto</span>
                 </button>

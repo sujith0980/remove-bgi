@@ -1,48 +1,58 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Upload,
-  Image as ImageIcon,
-  Trash2,
-  Download,
-  RefreshCw,
-  Scissors,
-  Check,
-  Layers,
-  AlertCircle,
-  Sparkles,
-  Palette,
-  Eye,
-  Plus,
-  Link as LinkIcon,
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Upload, 
+  Image as ImageIcon, 
+  Trash2, 
+  Download, 
+  RefreshCw, 
+  Scissors, 
+  Check, 
+  Layers, 
+  AlertCircle, 
+  Palette, 
+  Eye, 
+  Plus, 
+  Link as LinkIcon, 
   Info,
   ShieldAlert,
   Sliders,
   History,
   FileImage,
-} from "lucide-react";
-import { removeBackground, Config } from "@imgly/background-removal";
+  ShieldCheck,
+  X,
+  Sparkles
+} from 'lucide-react';
+import { removeBackground, Config } from '@imgly/background-removal';
 
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import CompareSlider from "./components/CompareSlider";
-import BrushEditor from "./components/BrushEditor";
+import Header from './components/Header';
+import Footer from './components/Footer';
+import CompareSlider from './components/CompareSlider';
+import BrushEditor from './components/BrushEditor';
+import SEOContent from './components/SEOContent';
+import Breadcrumbs from './components/Breadcrumbs';
+import AboutContact from './components/AboutContact';
+import ImageCropper from './components/ImageCropper';
 
-import {
-  SAMPLE_IMAGES,
-  COLOR_PRESETS,
-  GRADIENT_PRESETS,
-  IMAGE_PRESETS,
-} from "./constants";
+import { 
+  SAMPLE_IMAGES, 
+  COLOR_PRESETS, 
+  GRADIENT_PRESETS, 
+  IMAGE_PRESETS 
+} from './constants';
 
-import { ProcessedImage, EditorSettings, BackgroundPreset } from "./types";
+import { 
+  ProcessedImage, 
+  EditorSettings, 
+  BackgroundPreset 
+} from './types';
 
 const getSafeCorsUrl = (url: string): string => {
-  if (!url) return "";
-  if (url.startsWith("data:") || url.startsWith("blob:")) {
+  if (!url) return '';
+  if (url.startsWith('data:') || url.startsWith('blob:')) {
     return url;
   }
   const cb = `cb=${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-  if (url.includes("?")) {
+  if (url.includes('?')) {
     return `${url}&${cb}`;
   }
   return `${url}?${cb}`;
@@ -51,137 +61,309 @@ const getSafeCorsUrl = (url: string): string => {
 export default function App() {
   // Primary States
   const [currentImage, setCurrentImage] = useState<ProcessedImage | null>(null);
+  const [croppingImage, setCroppingImage] = useState<{ src: string | File; name: string } | null>(null);
   const [sessionHistory, setSessionHistory] = useState<ProcessedImage[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Quick helper to initiate cropping step
+  const initiateImageSelect = (src: string | File, name: string) => {
+    setCroppingImage({ src, name });
+  };
+  
   // Custom URL paste state
-  const [urlInput, setUrlInput] = useState("");
+  const [urlInput, setUrlInput] = useState('');
   const [isUrlSubmitting, setIsUrlSubmitting] = useState(false);
 
   // Tab state: 'compare' | 'backdrop'
-  const [activeTab, setActiveTab] = useState<"compare" | "backdrop">("compare");
+  const [activeTab, setActiveTab] = useState<'compare' | 'backdrop'>('compare');
 
   // Active primary website section state
-  const [activeSection, setActiveSection] = useState<
-    "upload" | "backdrop" | "pricing"
-  >("upload");
+  const [activeSection, setActiveSection] = useState<string>('upload');
 
   // Sync activeSection with activeTab when an image is loaded
   useEffect(() => {
     if (currentImage) {
-      if (activeTab === "backdrop") {
-        setActiveSection("backdrop");
+      if (activeTab === 'backdrop') {
+        setActiveSection('backdrop');
       } else {
-        setActiveSection("upload");
+        setActiveSection('upload');
       }
     } else {
-      setActiveSection("upload");
+      setActiveSection('upload');
     }
   }, [activeTab, currentImage]);
 
-  // Waitlist/Email acquisition states (Getting users first!)
-  const [waitlistEmail, setWaitlistEmail] = useState("");
-  const [isWaitlistSubmitted, setIsWaitlistSubmitted] = useState(false);
-  const [waitlistMessage, setWaitlistMessage] = useState("");
+  // Dynamic SEO Metadata and Header Management
+  useEffect(() => {
+    let title = 'BGI Remove - Free Image Background Remover';
+    let description = 'Remove image backgrounds instantly using BGI Remove. Fully client-side, secure, and free.';
+    let schemaType = 'WebApplication';
+    let schemaData: any = null;
 
-  const handleWaitlistSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (
-      !waitlistEmail ||
-      !waitlistEmail.trim() ||
-      !waitlistEmail.includes("@")
-    ) {
-      setError("Please provide a valid email address.");
-      return;
+    const slug = activeSection === 'upload' ? '' : activeSection;
+    const pageUrl = `https://bgiremove.com/${slug}`;
+
+    switch (activeSection) {
+      case 'about':
+        title = 'About Company & Local Sandboxed Models | BGI Remove';
+        description = 'Discover the mission behind BGI Remove—built entirely for secure, client-side browser backgrounds erasure with zero data storage.';
+        schemaType = 'AboutPage';
+        schemaData = {
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "About BGI Remove team",
+          "url": "https://bgiremove.com/about",
+          "description": "Learn about BGI Remove - our local serverless AI processing models and core commitments to complete privacy and premium tools."
+        };
+        break;
+      case 'contact':
+        title = 'Contact Us & Direct Technical Support | BGI Remove';
+        description = 'Contact our specialist technical team directly or send your feedback and model requests using our integrated form.';
+        schemaType = 'ContactPage';
+        schemaData = {
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": "Contact BGI Remove Support",
+          "url": "https://bgiremove.com/contact",
+          "description": "Send us direct support messages, technical feedback, or customized request notes regarding regional biometric features."
+        };
+        break;
+      case 'upload':
+        title = 'BGI Remove - Free High Resolution Background Remover';
+        description = 'Remove image backgrounds automatically and for free using BGI Remove. Fully client-side, secure, and offline-capable.';
+        schemaData = {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "BGI Remove",
+          "url": "https://bgiremove.com/",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "All",
+          "browserRequirements": "Requires HTML5 Canvas and WebAssembly support",
+          "description": "Premium local serverless background removal tool powered by high precision WASM segmented neural models.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0.00",
+            "priceCurrency": "USD"
+          }
+        };
+        break;
+      case 'backdrop':
+        title = 'Change Backgrounds Online - Transparent & Colors | BGI Remove';
+        description = 'Replace image backgrounds with white, solid studio colors, or custom templates instantly. High quality and 100% private.';
+        schemaData = {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "BGI Remove - Backdrop Editor",
+          "url": "https://bgiremove.com/backdrop",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "All",
+          "description": "Change backgrounds on cutout images instantly using color pickers, blur sliders, and stock preset backdrops.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0.00",
+            "priceCurrency": "USD"
+          }
+        };
+        break;
+      case 'pricing':
+        title = 'BGI Remove - 100% Free Premium Tiers & Pricing';
+        description = 'Explore free beta pricing plans for high-resolution background removal. Zero subscription fees, zero server watermarks.';
+        schemaData = {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "BGI Remove - Pricing Page",
+          "url": "https://bgiremove.com/pricing",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "All",
+          "description": "Unlock premium float32 4K background eraser layers during our open free beta trial.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0.00",
+            "priceCurrency": "USD"
+          }
+        };
+        break;
+      case 'docs':
+        title = 'User Guides, Specifications & Background Erasers | BGI Remove';
+        description = 'Browse tutorials on biometric passport cropping, background erasing, transparent PNG isolation, and studio settings.';
+        schemaType = 'Article';
+        break;
+      case 'blog':
+        title = 'BGI Remove Blog - Photo Editing Skills & Benchmarks';
+        description = 'Discover tips, photography tricks, and comparison benchmark studies written by digital design creators.';
+        schemaType = 'Article';
+        break;
+      case 'passport-photo':
+        title = 'Passport Photo Background Remover & Biometric Rules | BGI Remove';
+        description = 'Prepare US and EU compliant biometric passport photos by instantly replacing backgrounds with solid flat studio white.';
+        schemaType = 'Article';
+        break;
+      case 'white-background':
+        title = 'Remove White Backgrounds Online & Isolate Icons | BGI Remove';
+        description = 'Automatically isolate transparent outlines and vector masks from original white backdrops without quality loss.';
+        schemaType = 'Article';
+        break;
+      case 'free-remover':
+        title = '100% Free Serverless Image Background Removal | BGI Remove';
+        description = 'Learn how BGI Remove utilizes advanced local client web-assembly parameters to remain 100% free of cloud costs.';
+        schemaType = 'Article';
+        break;
+      case 'hd':
+        title = 'Studio HD 4K Background Remover Quality Settings | BGI Remove';
+        description = 'Access maximum image clarity up to 2800px on your high-definition graphics using local float32 neural parameters.';
+        schemaType = 'Article';
+        break;
+      case 'article-remove-bg':
+        title = 'How to Remove Image Backgrounds Perfectly - Master Tutorial';
+        description = 'A guide to professional photo masking—covering optimal shooting angles, lighting, and pixel level contrast tricks.';
+        schemaType = 'Article';
+        break;
+      case 'article-best-ai':
+        title = 'Best Background Removers in 2026: Speed vs Cost';
+        description = 'An in-depth performance study testing local browser WASM runtimes against high-priced cloud servers.';
+        schemaType = 'Article';
+        break;
+      case 'article-product-photos':
+        title = 'A Guide to Product Background Removal for Shopify Stores';
+        description = 'Increase storefront sales by automatically isolating product items onto pristine, distraction-free neutral tiles.';
+        schemaType = 'Article';
+        break;
     }
-    setError(null);
-    setIsWaitlistSubmitted(true);
-    setWaitlistMessage(
-      "Spot reserved successfully! All HD neural models are fully unlocked on your browser sandbox.",
-    );
-    localStorage.setItem("remove_ai_beta_user_email", waitlistEmail);
-  };
 
-  const handleNavClick = (destination: "upload" | "backdrop" | "pricing") => {
+    if (schemaType === 'Article' && !schemaData) {
+      schemaData = {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": title,
+        "description": description,
+        "url": pageUrl,
+        "image": "https://bgiremove.com/og-image.svg",
+        "inLanguage": "en-US",
+        "author": {
+          "@type": "Organization",
+          "name": "BGI Remove Specialist Editorial Team"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BGI Remove",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://bgiremove.com/favicon.ico"
+          }
+        },
+        "mainEntityOfPage": pageUrl
+      };
+    }
+
+    // Update browser document title
+    document.title = title;
+
+    // Helper to dynamically update meta tags in client HTML
+    const updateMetaTag = (selector: string, attribute: string, value: string) => {
+      const element = document.querySelector(selector);
+      if (element) {
+        element.setAttribute(attribute, value);
+      }
+    };
+
+    updateMetaTag('meta[name="description"]', 'content', description);
+    updateMetaTag('meta[property="og:title"]', 'content', title);
+    updateMetaTag('meta[property="og:description"]', 'content', description);
+    updateMetaTag('meta[property="og:url"]', 'content', pageUrl);
+    updateMetaTag('meta[name="twitter:title"]', 'content', title);
+    updateMetaTag('meta[name="twitter:description"]', 'content', description);
+
+    // 1. Dynamic Canonical Tag Injection
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', pageUrl);
+
+    // 2. Structured Data Schema JSON-LD Injector
+    let jsonLdScript = document.getElementById('bgi-seo-jsonld') as HTMLScriptElement;
+    if (!jsonLdScript) {
+      jsonLdScript = document.createElement('script');
+      jsonLdScript.id = 'bgi-seo-jsonld';
+      jsonLdScript.type = 'application/ld+json';
+      document.head.appendChild(jsonLdScript);
+    }
+    jsonLdScript.textContent = JSON.stringify(schemaData);
+
+  }, [activeSection]);
+
+
+  const handleNavClick = (destination: 'upload' | 'backdrop' | 'pricing' | 'docs' | 'blog' | string) => {
     setActiveSection(destination);
-
-    if (destination === "upload") {
+    
+    if (destination === 'upload') {
       if (!currentImage) {
-        const dropzone = document.getElementById("try-it-now");
+        const dropzone = document.getElementById('try-it-now');
         if (dropzone) {
-          dropzone.scrollIntoView({ behavior: "smooth", block: "center" });
+          dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       } else {
-        setActiveTab("compare");
+        setActiveTab('compare');
         setTimeout(() => {
-          const workspaceHeader = document.getElementById("workspace-panel");
+          const workspaceHeader = document.getElementById('workspace-panel');
           if (workspaceHeader) {
-            workspaceHeader.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
+            workspaceHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         }, 50);
       }
-    } else if (destination === "backdrop") {
+    } else if (destination === 'backdrop') {
       if (currentImage) {
-        setActiveTab("backdrop");
+        setActiveTab('backdrop');
         setTimeout(() => {
-          const backdropTitle = document.getElementById(
-            "backdrop-preset-section",
-          );
+          const backdropTitle = document.getElementById('backdrop-preset-section');
           if (backdropTitle) {
-            backdropTitle.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
+            backdropTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
           } else {
-            const workspaceHeader = document.getElementById("workspace-panel");
+            const workspaceHeader = document.getElementById('workspace-panel');
             if (workspaceHeader) {
-              workspaceHeader.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              });
+              workspaceHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
           }
         }, 80);
       } else {
         // Redirection to upload flow with explicit instructions
-        setActiveSection("upload");
-        setError(
-          "Please upload an image or select a sample photo first to change its background.",
-        );
+        setActiveSection('upload');
+        setError('Please upload an image or select a sample photo first to change its background.');
         setTimeout(() => {
-          const dropzone = document.getElementById("try-it-now");
+          const dropzone = document.getElementById('try-it-now');
           if (dropzone) {
-            dropzone.scrollIntoView({ behavior: "smooth", block: "center" });
+            dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
         }, 50);
       }
-    } else if (destination === "pricing") {
+    } else if (destination === 'pricing') {
       setTimeout(() => {
-        const pricingSec = document.getElementById("pricing-section");
+        const pricingSec = document.getElementById('pricing-section');
         if (pricingSec) {
-          pricingSec.scrollIntoView({ behavior: "smooth", block: "start" });
+          pricingSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, 100);
+    } else {
+      // For general virtual guides or blogs, scroll smoothly and instantly to top coordinates
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   // Custom Backdrop settings
   const [editorSettings, setEditorSettings] = useState<EditorSettings>({
-    backgroundType: "transparent",
-    colorValue: "#FFFFFF",
-    gradientValue: "linear-gradient(to bottom right, #F97316, #EC4899)",
+    backgroundType: 'transparent',
+    colorValue: '#FFFFFF',
+    gradientValue: 'linear-gradient(to bottom right, #F97316, #EC4899)',
     imageValue: IMAGE_PRESETS[0].value,
     blurValue: 0,
-    brushType: "erase",
-    brushSize: 30,
+    brushType: 'erase',
+    brushSize: 30
   });
 
   // Selected Custom Preset ID (to show ring selector)
-  const [selectedPresetId, setSelectedPresetId] =
-    useState<string>("transparent");
+  const [selectedPresetId, setSelectedPresetId] = useState<string>('transparent');
 
   // Manual Eraser Modal State
   const [isBrushEditorOpen, setIsBrushEditorOpen] = useState(false);
@@ -196,141 +378,124 @@ export default function App() {
   // 'isnet_quint8' = Speed/Draft (low latency, 11MB model, auto-downscaled to 800px)
   // 'isnet_fp16' = Balanced Pro (sweet spot, 22MB model, auto-downscaled to 1600px)
   // 'isnet' = Studio HD (complete high res precision, 44MB model, capped at safe 2800px to avoid WebGL memory overflow)
-  const [qualityMode, setQualityMode] = useState<
-    "isnet_quint8" | "isnet_fp16" | "isnet"
-  >(() => {
-    const saved = localStorage.getItem("remove_ai_quality_mode");
-    return (saved as "isnet_quint8" | "isnet_fp16" | "isnet") || "isnet_fp16";
+  const [qualityMode, setQualityMode] = useState<'isnet_quint8' | 'isnet_fp16' | 'isnet'>(() => {
+    const saved = localStorage.getItem('remove_ai_quality_mode');
+    return (saved as 'isnet_quint8' | 'isnet_fp16' | 'isnet') || 'isnet_fp16';
   });
 
+  // Beta Modal promotional alert popup state for premium tiers
+  const [betaModal, setBetaModal] = useState<{
+    isOpen: boolean;
+    profileName: string;
+    originalPrice: string;
+    targetMode: 'isnet_fp16' | 'isnet';
+    description: string;
+  } | null>(null);
+
   useEffect(() => {
-    localStorage.setItem("remove_ai_quality_mode", qualityMode);
+    localStorage.setItem('remove_ai_quality_mode', qualityMode);
   }, [qualityMode]);
 
   // Dynamic internal rescaling toggle:
   // true = Squeeze scaling (Standard portraits, isolates singular subject shapes)
   // false = Deep Boundary / Include context (No squeeze, parses widescreen connected objects like laptops, guitars, desks)
   const [rescaleMode, setRescaleMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem("remove_ai_rescale_mode");
-    return saved === null ? true : saved === "true";
+    const saved = localStorage.getItem('remove_ai_rescale_mode');
+    return saved === null ? true : saved === 'true';
   });
 
   useEffect(() => {
-    localStorage.setItem("remove_ai_rescale_mode", String(rescaleMode));
+    localStorage.setItem('remove_ai_rescale_mode', String(rescaleMode));
   }, [rescaleMode]);
 
   // Pristine HD Original Mask Restoration Composite Engine
-  const applyMaskToOriginal = (
-    originalFile: File | string,
-    cutoutBlob: Blob,
-  ): Promise<Blob> => {
+  const applyMaskToOriginal = (originalFile: string | File | Blob, cutoutBlob: Blob): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const originalImg = new Image();
-      const originalUrlStr =
-        typeof originalFile === "string"
-          ? getSafeCorsUrl(originalFile)
-          : URL.createObjectURL(originalFile);
-      if (
-        originalUrlStr.startsWith("http") &&
-        !originalUrlStr.startsWith(window.location.origin)
-      ) {
-        originalImg.crossOrigin = "anonymous";
+      const originalUrlStr = typeof originalFile === 'string' ? getSafeCorsUrl(originalFile) : URL.createObjectURL(originalFile);
+      if (originalUrlStr.startsWith('http') && !originalUrlStr.startsWith(window.location.origin)) {
+        originalImg.crossOrigin = 'anonymous';
       }
-
+      
       const cutoutImg = new Image();
       const cutoutUrlStr = URL.createObjectURL(cutoutBlob);
       // Local Blob URLs must NOT have crossOrigin set to avoid browser security blocking.
-
+      
       originalImg.src = originalUrlStr;
       cutoutImg.src = cutoutUrlStr;
-
+      
       let loadedCount = 0;
       const onImageLoad = () => {
         loadedCount++;
         if (loadedCount === 2) {
           try {
-            const canvas = document.createElement("canvas");
+            const canvas = document.createElement('canvas');
             canvas.width = originalImg.width;
             canvas.height = originalImg.height;
-            const ctx = canvas.getContext("2d");
+            const ctx = canvas.getContext('2d');
             if (!ctx) {
-              reject(new Error("Canvas 2D context not available"));
+              reject(new Error('Canvas 2D context not available'));
               return;
             }
-
+            
             // Draw the cutout (which might be downsampled, e.g. 800px or 1600px) stretched to 100% of the original HD dimensions.
             // Browser's bilinear canvas filtering will smoothly scale out the alpha path.
-            ctx.drawImage(
-              cutoutImg,
-              0,
-              0,
-              originalImg.width,
-              originalImg.height,
-            );
-
+            ctx.drawImage(cutoutImg, 0, 0, originalImg.width, originalImg.height);
+            
             // Mask the original high-resolution pixels with the alpha mask using composite operator
-            ctx.globalCompositeOperation = "source-in";
+            ctx.globalCompositeOperation = 'source-in';
             ctx.drawImage(originalImg, 0, 0);
-
+            
             canvas.toBlob((blob) => {
               if (blob) {
                 resolve(blob);
               } else {
-                reject(new Error("Failed to output canvas blob"));
+                reject(new Error('Failed to output canvas blob'));
               }
-            }, "image/png");
+            }, 'image/png');
           } catch (err) {
             reject(err);
           }
         }
       };
-
+      
       originalImg.onload = onImageLoad;
       cutoutImg.onload = onImageLoad;
-
+      
       originalImg.onerror = (e) => reject(e);
       cutoutImg.onerror = (e) => reject(e);
     });
   };
 
   // Downscaler utility to speed up browser ONNX processing significantly (for Speed Draft and Balanced Pro)
-  const resizeImageToMax = (
-    file: File | string,
-    maxDimension: number,
-  ): Promise<Blob> => {
+  const resizeImageToMax = (file: string | File | Blob, maxDimension: number): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      const urlStr =
-        typeof file === "string"
-          ? getSafeCorsUrl(file)
-          : URL.createObjectURL(file);
-      if (
-        urlStr.startsWith("http") &&
-        !urlStr.startsWith(window.location.origin)
-      ) {
-        img.crossOrigin = "anonymous";
+      const urlStr = typeof file === 'string' ? getSafeCorsUrl(file) : URL.createObjectURL(file);
+      if (urlStr.startsWith('http') && !urlStr.startsWith(window.location.origin)) {
+        img.crossOrigin = 'anonymous';
       }
       img.src = urlStr;
       img.onload = () => {
         let width = img.width;
         let height = img.height;
         if (width <= maxDimension && height <= maxDimension) {
-          const canvas = document.createElement("canvas");
+          const canvas = document.createElement('canvas');
           canvas.width = width;
           canvas.height = height;
-          const ctx = canvas.getContext("2d");
+          const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
             canvas.toBlob((blob) => {
               if (blob) resolve(blob);
-              else reject(new Error("Canvas conversion to blob failed"));
-            }, "image/png");
+              else reject(new Error('Canvas conversion to blob failed'));
+            }, 'image/png');
           } else {
-            reject(new Error("Could not get 2D context"));
+            reject(new Error('Could not get 2D context'));
           }
           return;
         }
-
+        
         if (width > height) {
           if (width > maxDimension) {
             height = Math.round((height * maxDimension) / width);
@@ -343,21 +508,21 @@ export default function App() {
           }
         }
 
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
           canvas.toBlob((blob) => {
             if (blob) {
               resolve(blob);
             } else {
-              reject(new Error("Canvas conversion to blob failed"));
+              reject(new Error('Canvas conversion to blob failed'));
             }
-          }, "image/png");
+          }, 'image/png');
         } else {
-          reject(new Error("Could not get 2D context"));
+          reject(new Error('Could not get 2D context'));
         }
       };
       img.onerror = (e) => {
@@ -373,69 +538,56 @@ export default function App() {
   const bgFileInputRef = useRef<HTMLInputElement>(null);
 
   // Process selected image source (file, URL, or demo blob)
-  const processImage = async (
-    imageSrc: string | File,
-    originalName: string,
-  ) => {
+  const processImage = async (imageSrc: string | File | Blob, originalName: string) => {
     const uniqueId = Math.random().toString(36).substring(7);
-    const initialUrl =
-      typeof imageSrc === "string" ? imageSrc : URL.createObjectURL(imageSrc);
+    const initialUrl = typeof imageSrc === 'string' ? imageSrc : URL.createObjectURL(imageSrc);
 
     const newImage: ProcessedImage = {
       id: uniqueId,
       name: originalName,
-      size: imageSrc instanceof File ? imageSrc.size : 256000,
+      size: imageSrc instanceof Blob ? imageSrc.size : 256000,
       width: 0,
       height: 0,
       originalUrl: initialUrl,
-      originalFile: imageSrc instanceof File ? imageSrc : undefined,
-      status: "loading",
+      originalFile: imageSrc instanceof Blob ? imageSrc : undefined,
+      status: 'loading',
       progress: 0,
-      progressStep: "Uploading, please wait...",
+      progressStep: 'Reading image data...'
     };
 
     setCurrentImage(newImage);
     setError(null);
     setUsingFallback(false);
-    setActiveTab("compare"); // reset tab
+    setActiveTab('compare'); // reset tab
 
     // Instantly scroll back to top/workspace panel to prevent layout shifts showing the pricing section
-    window.scrollTo({ top: 0, behavior: "auto" });
+    window.scrollTo({ top: 0, behavior: 'auto' });
     setTimeout(() => {
-      const workspace = document.getElementById("workspace-panel");
+      const workspace = document.getElementById('workspace-panel');
       if (workspace) {
-        workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+        workspace.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
 
     try {
       // 1. Decide dynamic resizing based on speed qualityMode
-      let processedSrcForAI: string | File | Blob = imageSrc;
+      let processedSrcToSegment: string | File | Blob = imageSrc;
       let resizeDimension = 0;
-      if (qualityMode === "isnet_quint8") {
+      if (qualityMode === 'isnet_quint8') {
         resizeDimension = 800;
-        setCurrentImage((prev) =>
-          prev ? { ...prev, progressStep: "Uploading, please wait..." } : null,
-        );
-      } else if (qualityMode === "isnet_fp16") {
+        setCurrentImage(prev => prev ? { ...prev, progressStep: 'Optimizing and resizing image...' } : null);
+      } else if (qualityMode === 'isnet_fp16') {
         resizeDimension = 1600;
-        setCurrentImage((prev) =>
-          prev ? { ...prev, progressStep: "Uploading, please wait..." } : null,
-        );
+        setCurrentImage(prev => prev ? { ...prev, progressStep: 'Optimizing and resizing image...' } : null);
       } else {
         resizeDimension = 2800; // Cap Studio HD at safe 2800px so it never triggers browser WASM memory crashes
-        setCurrentImage((prev) =>
-          prev ? { ...prev, progressStep: "Uploading, please wait..." } : null,
-        );
+        setCurrentImage(prev => prev ? { ...prev, progressStep: 'Optimizing and resizing image...' } : null);
       }
 
       try {
-        processedSrcForAI = await resizeImageToMax(imageSrc, resizeDimension);
+        processedSrcToSegment = await resizeImageToMax(imageSrc, resizeDimension);
       } catch (resizeErr) {
-        console.warn(
-          "CORS / Canvas resize restriction. Falling back to raw file input sizes.",
-          resizeErr,
-        );
+        console.warn('CORS / Canvas resize restriction. Falling back to raw file input sizes.', resizeErr);
       }
 
       // 2. Set up model configuration parameters with progress step strings
@@ -444,48 +596,40 @@ export default function App() {
         rescale: rescaleMode, // Override scale normalization
         progress: (key: string, current: number, total: number) => {
           const percent = Math.round((current / total) * 100);
-          let step = "Uploading, please wait...";
-
-          if (key.includes("fetch")) {
-            step = "Uploading, please wait...";
-          } else if (key.includes("compute")) {
-            step = "Removing background...";
-          } else if (key.includes("isolate")) {
-            step = "Removing background...";
+          let step = 'Analyzing pixels...';
+          
+          if (key.includes('fetch')) {
+            step = 'Downloading local model parameters (first load)...';
+          } else if (key.includes('compute')) {
+            step = 'Isolating foreground structure...';
+          } else if (key.includes('isolate')) {
+            step = 'Generating alpha transparency mask...';
           } else {
-            step = "Removing background...";
+            step = 'Processing segmentations...';
           }
 
-          setCurrentImage((prev) => {
+          setCurrentImage(prev => {
             if (!prev || prev.id !== uniqueId) return prev;
             return {
               ...prev,
               progress: percent,
-              progressStep: step,
+              progressStep: step
             };
           });
-        },
+        }
       };
 
       // Execute background-removal library on target source
-      const maskedBlob = await removeBackground(
-        processedSrcForAI as any,
-        config,
-      );
-
+      const maskedBlob = await removeBackground(processedSrcToSegment as any, config);
+      
       // Restore full pristine high-resolution quality by overlaying mask on original image!
-      setCurrentImage((prev) =>
-        prev ? { ...prev, progressStep: "Removing background..." } : null,
-      );
-
+      setCurrentImage(prev => prev ? { ...prev, progressStep: 'Removing background...' } : null);
+      
       let finalBlob = maskedBlob;
       try {
         finalBlob = await applyMaskToOriginal(imageSrc, maskedBlob);
       } catch (overlayErr) {
-        console.warn(
-          "Error applying HD mask restore composite, proceeding with neural resolution.",
-          overlayErr,
-        );
+        console.warn('Error applying HD mask restore composite, proceeding with neural resolution.', overlayErr);
       }
 
       const transparentUrl = URL.createObjectURL(finalBlob);
@@ -494,41 +638,35 @@ export default function App() {
       const imgMeasure = new Image();
       imgMeasure.src = transparentUrl;
       imgMeasure.onload = () => {
-        setCurrentImage((prev) => {
+        setCurrentImage(prev => {
           if (!prev || prev.id !== uniqueId) return prev;
           const completedImg: ProcessedImage = {
             ...prev,
-            status: "completed",
+            status: 'completed',
             progress: 100,
-            progressStep: "Background removed successfully!",
+            progressStep: 'Background removed successfully!',
             processedUrl: transparentUrl,
             processedBlob: finalBlob,
             width: imgMeasure.naturalWidth,
-            height: imgMeasure.naturalHeight,
+            height: imgMeasure.naturalHeight
           };
 
           // Save to session history list
-          setSessionHistory((hist) =>
-            [completedImg, ...hist]
-              .filter((h) => h.id !== completedImg.id)
-              .slice(0, 8),
-          );
+          setSessionHistory(hist => [completedImg, ...hist].filter(h => h.id !== completedImg.id).slice(0, 8));
           return completedImg;
         });
       };
-    } catch (err: any) {
-      console.warn(
-        "Real AI background-removal failed or security blocked. Running local contour fallback.",
-        err,
-      );
 
+    } catch (err: any) {
+      console.warn('Real background-removal failed or security blocked. Running local contour fallback.', err);
+      
       // Fallback: Run canvas estimation after 800ms to demonstrate instant local backup
-      setCurrentImage((prev) => {
+      setCurrentImage(prev => {
         if (!prev || prev.id !== uniqueId) return prev;
         return {
           ...prev,
           progress: 40,
-          progressStep: "Removing background...",
+          progressStep: 'Removing background...'
         };
       });
 
@@ -539,26 +677,19 @@ export default function App() {
   };
 
   // Safe Fallback Cutout: generates a beautiful transparent overlay so user can still manually refine
-  const setupFallbackCutout = (
-    imgUrl: string,
-    uniqueId: string,
-    originalName: string,
-  ) => {
+  const setupFallbackCutout = (imgUrl: string, uniqueId: string, originalName: string) => {
     const rawImg = new Image();
     const safeUrl = getSafeCorsUrl(imgUrl);
-    if (
-      safeUrl.startsWith("http") &&
-      !safeUrl.startsWith(window.location.origin)
-    ) {
-      rawImg.crossOrigin = "anonymous";
+    if (safeUrl.startsWith('http') && !safeUrl.startsWith(window.location.origin)) {
+      rawImg.crossOrigin = 'anonymous';
     }
     rawImg.src = safeUrl;
-
+    
     rawImg.onload = () => {
-      const fallbackCanvas = document.createElement("canvas");
+      const fallbackCanvas = document.createElement('canvas');
       fallbackCanvas.width = rawImg.naturalWidth || 600;
       fallbackCanvas.height = rawImg.naturalHeight || 600;
-      const ctx = fallbackCanvas.getContext("2d");
+      const ctx = fallbackCanvas.getContext('2d');
 
       if (ctx) {
         // Draw image
@@ -567,69 +698,58 @@ export default function App() {
         // Run a simple radial gradient mask simulating Center-Focus mask:
         // Inside a central ellipse is clear, outside has higher alpha erosion (transparent)
         // This gives the user a soft start that they can instantly details-refine with Eraser/Restore brush!
-        ctx.globalCompositeOperation = "destination-out";
-
+        ctx.globalCompositeOperation = 'destination-out';
+        
         const cx = fallbackCanvas.width / 2;
         const cy = fallbackCanvas.height / 2;
         const rx = fallbackCanvas.width * 0.42;
         const ry = fallbackCanvas.height * 0.48;
 
-        const gradient = ctx.createRadialGradient(
-          cx,
-          cy,
-          Math.min(rx, ry) * 0.4,
-          cx,
-          cy,
-          Math.max(rx, ry),
-        );
-        gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
-        gradient.addColorStop(0.6, "rgba(0,0,0, 0.15)");
-        gradient.addColorStop(0.85, "rgba(0, 0, 0, 0.8)");
-        gradient.addColorStop(1, "rgba(0, 0, 0, 1)");
+        const gradient = ctx.createRadialGradient(cx, cy, Math.min(rx, ry) * 0.4, cx, cy, Math.max(rx, ry));
+        gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        gradient.addColorStop(0.6, 'rgba(0,0,0, 0.15)');
+        gradient.addColorStop(0.85, 'rgba(0, 0, 0, 0.8)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
 
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, fallbackCanvas.width, fallbackCanvas.height);
       }
 
       // Convert back to url
-      const fallbackUrl = fallbackCanvas.toDataURL("image/png");
-
+      const fallbackUrl = fallbackCanvas.toDataURL('image/png');
+      
       setUsingFallback(true);
-      setCurrentImage((prev) => {
+      setCurrentImage(prev => {
         if (!prev || prev.id !== uniqueId) return prev;
         const completedImg: ProcessedImage = {
           ...prev,
-          status: "completed",
+          status: 'completed',
           progress: 100,
-          progressStep: "Background removed successfully!",
+          progressStep: 'Background removed successfully!',
           processedUrl: fallbackUrl,
           width: rawImg.naturalWidth || 600,
-          height: rawImg.naturalHeight || 600,
+          height: rawImg.naturalHeight || 600
         };
 
-        setSessionHistory((hist) =>
-          [completedImg, ...hist]
-            .filter((h) => h.id !== completedImg.id)
-            .slice(0, 8),
-        );
+        setSessionHistory(hist => [completedImg, ...hist].filter(h => h.id !== completedImg.id).slice(0, 8));
         return completedImg;
       });
     };
 
     rawImg.onerror = () => {
       // Complete backup failsafe: just pass the same image
-      setCurrentImage((prev) => {
+      setCurrentImage(prev => {
         if (!prev || prev.id !== uniqueId) return prev;
         return {
           ...prev,
-          status: "completed",
+          status: 'completed',
           progress: 100,
           processedUrl: imgUrl,
           width: 500,
-          height: 500,
+          height: 500
         };
       });
-      setError("Strict CORS detected. Manual drawing tools unlocked!");
+      setError('Strict CORS detected. Manual drawing tools unlocked!');
     };
   };
 
@@ -646,13 +766,13 @@ export default function App() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDraggingOver(false);
-
+    
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      if (file.type.startsWith("image/")) {
-        processImage(file, file.name);
+      if (file.type.startsWith('image/')) {
+        initiateImageSelect(file, file.name);
       } else {
-        setError("Please drop valid image files (png, jpeg, webp) only.");
+        setError('Please drop valid image files (png, jpeg, webp) only.');
       }
     }
   };
@@ -661,7 +781,7 @@ export default function App() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      processImage(file, file.name);
+      initiateImageSelect(file, file.name);
     }
   };
 
@@ -673,68 +793,68 @@ export default function App() {
     setIsUrlSubmitting(true);
     setError(null);
     const cleanedUrl = urlInput.trim();
-
+    
     // Extract a mock nice filename from URL
-    let filename = "pasted_image.png";
+    let filename = 'pasted_image.png';
     try {
       const urlObj = new URL(cleanedUrl);
       const pathname = urlObj.pathname;
-      const lastSegment = pathname.substring(pathname.lastIndexOf("/") + 1);
-      if (lastSegment && lastSegment.includes(".")) {
+      const lastSegment = pathname.substring(pathname.lastIndexOf('/') + 1);
+      if (lastSegment && lastSegment.includes('.')) {
         filename = lastSegment;
       }
     } catch (_) {}
 
-    setUrlInput("");
+    setUrlInput('');
     setIsUrlSubmitting(false);
-    processImage(cleanedUrl, filename);
+    initiateImageSelect(cleanedUrl, filename);
   };
 
   // Trigger manual paste (Ctrl+V) anywhere on the window! Awesome utility
   useEffect(() => {
     const handleWindowPaste = (e: ClipboardEvent) => {
       if (isBrushEditorOpen) return; // ignore when brush sandbox is running
-
+      
       const items = e.clipboardData?.items;
       if (!items) return;
 
       for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf("image") !== -1) {
+        if (items[i].type.indexOf('image') !== -1) {
           const file = items[i].getAsFile();
           if (file) {
-            processImage(file, "clipboard_capture.png");
+            initiateImageSelect(file, 'clipboard_capture.png');
             break;
           }
         }
       }
     };
 
-    window.addEventListener("paste", handleWindowPaste);
+    window.addEventListener('paste', handleWindowPaste);
     return () => {
-      window.removeEventListener("paste", handleWindowPaste);
+      window.removeEventListener('paste', handleWindowPaste);
     };
   }, [isBrushEditorOpen]);
 
   // Handle Preset Backdrop select
   const selectPreset = (preset: BackgroundPreset) => {
     setSelectedPresetId(preset.id);
-    if (preset.type === "color") {
-      setEditorSettings((prev) => ({
+    if (preset.type === 'color') {
+      setEditorSettings(prev => ({
         ...prev,
-        backgroundType: "color",
-        colorValue: preset.value,
+        backgroundType: 'color',
+        colorValue: preset.value
       }));
-    } else if (preset.type === "gradient") {
-      setEditorSettings((prev) => ({
+    } else if (preset.type === 'gradient') {
+      setEditorSettings(prev => ({
         ...prev,
-        backgroundType: "gradient",
-        gradientValue: preset.value,
+        backgroundType: 'gradient',
+        gradientValue: preset.value
       }));
-    } else if (preset.type === "image") {
-      setEditorSettings((prev) => ({
+    } else if (preset.type === 'image') {
+      setEditorSettings(prev => ({
         ...prev,
-        backgroundType: "image",
-        imageValue: preset.value,
+        backgroundType: 'image',
+        imageValue: preset.value
       }));
     }
   };
@@ -744,22 +864,22 @@ export default function App() {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const customUrl = URL.createObjectURL(file);
-      setEditorSettings((prev) => ({
+      setEditorSettings(prev => ({
         ...prev,
-        backgroundType: "image",
-        imageValue: customUrl,
+        backgroundType: 'image',
+        imageValue: customUrl
       }));
-      setSelectedPresetId("custom-bg");
+      setSelectedPresetId('custom-bg');
     }
   };
 
   // Save manual editor canvas outputs
   const handleBrushSave = (editedDataUrl: string) => {
-    setCurrentImage((prev) => {
+    setCurrentImage(prev => {
       if (!prev) return null;
       return {
         ...prev,
-        editedUrl: editedDataUrl,
+        editedUrl: editedDataUrl
       };
     });
     setIsBrushEditorOpen(false);
@@ -774,9 +894,9 @@ export default function App() {
     if (!foregroundUrl) return;
 
     // Fast-path: downloading standard transparent PNG directly avoids canvas load delay
-    if (editorSettings.backgroundType === "transparent") {
-      const link = document.createElement("a");
-      link.download = `${currentImage.name.replace(/\.[^/.]+$/, "")}_nobg.png`;
+    if (editorSettings.backgroundType === 'transparent') {
+      const link = document.createElement('a');
+      link.download = `${currentImage.name.replace(/\.[^/.]+$/, '')}_nobg.png`;
       link.href = foregroundUrl;
       document.body.appendChild(link);
       link.click();
@@ -785,36 +905,31 @@ export default function App() {
     }
 
     // Heavy-path: Merge backdrops via HTML Canvas
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     const fgImg = new Image();
-    if (
-      foregroundUrl.startsWith("http") &&
-      !foregroundUrl.startsWith(window.location.origin)
-    ) {
-      fgImg.crossOrigin = "anonymous";
+    if (foregroundUrl.startsWith('http') && !foregroundUrl.startsWith(window.location.origin)) {
+      fgImg.crossOrigin = 'anonymous';
     }
     fgImg.src = foregroundUrl;
 
-    setCurrentImage((prev) =>
-      prev ? { ...prev, progressStep: "Combining backdrops..." } : null,
-    );
+    setCurrentImage(prev => prev ? { ...prev, progressStep: 'Combining backdrops...' } : null);
 
     fgImg.onload = () => {
       canvas.width = fgImg.naturalWidth || 800;
       canvas.height = fgImg.naturalHeight || 800;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
       // Wrap drawing in sequential layout steps
       const drawForegroundAndDownload = () => {
         // Draw cropped subject without filters
-        ctx.filter = "none";
+        ctx.filter = 'none';
         ctx.drawImage(fgImg, 0, 0, canvas.width, canvas.height);
 
         // Create download trigger
-        const mergedUrl = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.download = `${currentImage.name.replace(/\.[^/.]+$/, "")}_composited.png`;
+        const mergedUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `${currentImage.name.replace(/\.[^/.]+$/, '')}_composited.png`;
         link.href = mergedUrl;
         document.body.appendChild(link);
         link.click();
@@ -822,24 +937,17 @@ export default function App() {
       };
 
       // Draw background segment
-      if (editorSettings.backgroundType === "color") {
+      if (editorSettings.backgroundType === 'color') {
         ctx.fillStyle = editorSettings.colorValue;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         drawForegroundAndDownload();
-      } else if (editorSettings.backgroundType === "gradient") {
+      } else if (editorSettings.backgroundType === 'gradient') {
         // Resolve preset color stops to paint canvas gradient:
-        const activePreset = GRADIENT_PRESETS.find(
-          (p) => p.value === editorSettings.gradientValue,
-        );
-        const stops = activePreset?.colors || ["#F97316", "#EC4899"];
-
+        const activePreset = GRADIENT_PRESETS.find(p => p.value === editorSettings.gradientValue);
+        const stops = activePreset?.colors || ['#F97316', '#EC4899'];
+        
         // Draw diagonal gradient
-        const grad = ctx.createLinearGradient(
-          0,
-          0,
-          canvas.width,
-          canvas.height,
-        );
+        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
         grad.addColorStop(0, stops[0]);
         if (stops.length > 2) {
           grad.addColorStop(0.5, stops[1]);
@@ -851,13 +959,10 @@ export default function App() {
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         drawForegroundAndDownload();
-      } else if (editorSettings.backgroundType === "image") {
+      } else if (editorSettings.backgroundType === 'image') {
         const bgImg = new Image();
-        if (
-          editorSettings.imageValue.startsWith("http") &&
-          !editorSettings.imageValue.startsWith(window.location.origin)
-        ) {
-          bgImg.crossOrigin = "anonymous";
+        if (editorSettings.imageValue.startsWith('http') && !editorSettings.imageValue.startsWith(window.location.origin)) {
+          bgImg.crossOrigin = 'anonymous';
         }
         bgImg.src = editorSettings.imageValue;
 
@@ -872,7 +977,7 @@ export default function App() {
 
         bgImg.onerror = () => {
           // Draw plain gray fallback if user image URLs are blocked
-          ctx.fillStyle = "#E5E7EB";
+          ctx.fillStyle = '#E5E7EB';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           drawForegroundAndDownload();
         };
@@ -882,16 +987,16 @@ export default function App() {
 
   // Helper bytes converter
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return "0 B";
+    if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ["B", "KB", "MB"];
+    const sizes = ['B', 'KB', 'MB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
   // Render original preview and dynamic filtered background
   const getDynamicBackdropStyle = (): React.CSSProperties => {
-    if (editorSettings.backgroundType === "transparent") {
+    if (editorSettings.backgroundType === 'transparent') {
       return {
         // Standard PNG chess grid
         backgroundImage: `
@@ -900,289 +1005,110 @@ export default function App() {
           linear-gradient(45deg, transparent 75%, #ddd 75%), 
           linear-gradient(-45deg, transparent 75%, #ddd 75%)
         `,
-        backgroundSize: "16px 16px",
-        backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px",
-        backgroundColor: "#FCFCFC",
+        backgroundSize: '16px 16px',
+        backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px',
+        backgroundColor: '#FCFCFC'
       };
     }
-    if (editorSettings.backgroundType === "color") {
+    if (editorSettings.backgroundType === 'color') {
       return { backgroundColor: editorSettings.colorValue };
     }
-    if (editorSettings.backgroundType === "gradient") {
+    if (editorSettings.backgroundType === 'gradient') {
       return { background: editorSettings.gradientValue };
     }
-    if (editorSettings.backgroundType === "image") {
+    if (editorSettings.backgroundType === 'image') {
       return {
         backgroundImage: `url(${editorSettings.imageValue})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        filter:
-          editorSettings.blurValue > 0
-            ? `blur(${editorSettings.blurValue}px)`
-            : "none",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: editorSettings.blurValue > 0 ? `blur(${editorSettings.blurValue}px)` : 'none'
       };
     }
     return {};
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-neutral-800 selection:bg-orange-500 selection:text-white font-sans">
+    <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100 selection:bg-orange-500 selection:text-white font-sans">
+      
       {/* Navigation Header */}
       <Header onNavClick={handleNavClick} activeSection={activeSection} />
 
       {/* Primary Area Container */}
       <main className="flex-1 flex flex-col">
-        {/* VIEW 1: HERO PORTAL (No image uploaded yet) */}
-        {!currentImage && (
-          <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-16 flex-1 flex flex-col justify-center">
-            {/* Visual Top Highlight BANNER */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center space-x-1.5 rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600 uppercase tracking-widest mb-4">
-                <Sparkles className="h-3 w-3" />
-                <span>Next-Gen Web Assembly Isolation</span>
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-neutral-900 leading-tight">
-                BGI Remove — Remove Image{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
-                  Background
-                </span>
+        {['docs', 'blog', 'passport-photo', 'white-background', 'hd', 'free-remover', 'article-remove-bg', 'article-best-ai', 'article-product-photos', 'about', 'contact'].includes(activeSection) ? (
+          <>
+            <Breadcrumbs activeSection={activeSection} onNavigate={(view) => setActiveSection(view)} />
+            {['about', 'contact'].includes(activeSection) ? (
+              <AboutContact initialTab={activeSection as 'about' | 'contact'} />
+            ) : (
+              <SEOContent 
+                currentView={activeSection} 
+                onNavigate={(view) => setActiveSection(view)}
+                onApplyPreset={(preset) => {
+                  // Apply Preset Backdrop Settings
+                  setEditorSettings(prev => ({
+                    ...prev,
+                    backgroundType: preset.backgroundType,
+                    colorValue: preset.colorValue || prev.colorValue,
+                    imageValue: preset.imageValue || prev.imageValue
+                  }));
+                  if (preset.rescaleMode !== undefined) {
+                    setRescaleMode(preset.rescaleMode);
+                  }
+                }}
+              />
+            )}
+          </>
+        ) : (
+          <>
+            {croppingImage ? (
+              <ImageCropper
+                imageSrc={croppingImage.src}
+                name={croppingImage.name}
+                onConfirm={(croppedBlob) => {
+                  const savedName = croppingImage.name;
+                  setCroppingImage(null);
+                  processImage(croppedBlob, savedName);
+                }}
+                onSkip={() => {
+                  const savedSrc = croppingImage.src;
+                  const savedName = croppingImage.name;
+                  setCroppingImage(null);
+                  processImage(savedSrc, savedName);
+                }}
+                onCancel={() => {
+                  setCroppingImage(null);
+                }}
+              />
+            ) : (
+              <>
+                {/* VIEW 1: HERO PORTAL (No image uploaded yet) */}
+                {!currentImage && (
+          <section className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex-1 flex flex-col justify-center">
+            
+            {/* Elegant Header Display Info */}
+            <div className="text-center mb-12">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                Remove Image <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">Background</span>
               </h1>
-              <p className="mt-4 text-base sm:text-lg text-neutral-500 max-w-2xl mx-auto font-medium">
-                BGI Remove is an AI-powered background remover tool for JPG,
-                PNG, and WebP images. 100% automatic and free, with all
-                rendering performed locally in your browser so your files remain
-                private and secure.
+              <p className="mt-4 text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto">
+                100% automatic and free. Processing is done securely in your browser—your files never leave your computer.
               </p>
-              <p className="mt-4 text-sm sm:text-base text-neutral-500 max-w-2xl mx-auto font-medium">
-                Try it now with any photo and instantly download a transparent
-                PNG, solid color backdrop, or custom background image.
-              </p>
-            </div>
-
-            {/* AI Engine Speed & Quality Configurations */}
-            <div className="max-w-4xl mx-auto w-full mb-8 p-5 sm:p-6 bg-amber-50/30 border border-amber-200/60 rounded-3xl shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/40 pb-3">
-                <div className="flex items-center space-x-2">
-                  <Sliders className="h-4.5 w-4.5 text-orange-500 animate-pulse" />
-                  <span className="font-extrabold text-sm text-neutral-800 tracking-tight">
-                    AI Speed & Quality Configuration
-                  </span>
-                </div>
-                <span className="text-[10px] uppercase font-mono font-bold text-neutral-400 tracking-wider">
-                  Customize local browser engine execution
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                {/* Draft / Speed mode */}
-                <button
-                  type="button"
-                  onClick={() => setQualityMode("isnet_quint8")}
-                  className={`flex flex-col text-left p-4 rounded-2xl border transition duration-200 relative ${
-                    qualityMode === "isnet_quint8"
-                      ? "border-orange-500 bg-white ring-2 ring-orange-500/15 shadow-sm"
-                      : "border-neutral-200 hover:border-neutral-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-xs font-bold text-neutral-900 flex items-center space-x-1.5">
-                      <span>🏃 Speed Draft (Fast)</span>
-                    </span>
-                    <span className="text-[9px] bg-neutral-100 px-1.5 py-0.5 rounded font-mono text-neutral-500 font-extrabold">
-                      11 MB
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-500 mt-2 leading-relaxed">
-                    Uses small quantized 8-bit weights. Auto-downscaled to{" "}
-                    <strong className="text-neutral-700">800px</strong>.{" "}
-                    <strong>Loads and processes extremely fast!</strong>
-                  </p>
-                  {qualityMode === "isnet_quint8" && (
-                    <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-orange-500 text-white flex items-center justify-center text-[10px] font-bold">
-                      ✓
-                    </span>
-                  )}
-                </button>
-
-                {/* Standard quality Mode */}
-                <button
-                  type="button"
-                  onClick={() => setQualityMode("isnet_fp16")}
-                  className={`flex flex-col text-left p-4 rounded-2xl border transition duration-200 relative ${
-                    qualityMode === "isnet_fp16"
-                      ? "border-orange-500 bg-white ring-2 ring-orange-500/15 shadow-sm"
-                      : "border-neutral-200 hover:border-neutral-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-xs font-bold text-neutral-900 flex items-center space-x-1.5">
-                      <span>✨ Balanced Pro</span>
-                    </span>
-                    <span className="text-[9px] bg-neutral-100 px-1.5 py-0.5 rounded font-mono text-neutral-500 font-extrabold">
-                      22 MB
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-500 mt-2 leading-relaxed">
-                    Uses precision 16-bit Float weight scales. Auto-downscaled
-                    to <strong className="text-neutral-700">1600px</strong>.
-                    Great mix of high speed & clarity.
-                  </p>
-                  {qualityMode === "isnet_fp16" && (
-                    <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-orange-500 text-white flex items-center justify-center text-[10px] font-bold">
-                      ✓
-                    </span>
-                  )}
-                </button>
-
-                {/* Studio HD quality Mode */}
-                <button
-                  type="button"
-                  onClick={() => setQualityMode("isnet")}
-                  className={`flex flex-col text-left p-4 rounded-2xl border transition duration-200 relative ${
-                    qualityMode === "isnet"
-                      ? "border-orange-500 bg-white ring-2 ring-orange-500/15 shadow-sm"
-                      : "border-neutral-200 hover:border-neutral-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-xs font-bold text-neutral-900 flex items-center space-x-1.5">
-                      <span>⭐ Professional Studio HD</span>
-                    </span>
-                    <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-mono font-extrabold">
-                      44 MB
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-500 mt-2 leading-relaxed">
-                    Uses full HD 32-bit float neural maps. Capped at safe{" "}
-                    <strong className="text-neutral-700">2800px</strong>.
-                    Maximum possible details on edge boundaries.
-                  </p>
-                  {qualityMode === "isnet" && (
-                    <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-orange-500 text-white flex items-center justify-center text-[10px] font-bold">
-                      ✓
-                    </span>
-                  )}
-                </button>
-              </div>
-
-              {/* Foreground Focus Strategy Settings */}
-              <div className="bg-neutral-100/40 p-4 sm:p-4.5 rounded-2xl border border-neutral-200/50 space-y-3 mt-1.5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-200/30 pb-2">
-                  <div className="flex items-center space-x-1.5">
-                    <Sparkles className="h-4 w-4 text-emerald-500" />
-                    <span className="font-extrabold text-[11px] sm:text-xs text-neutral-800 tracking-tight">
-                      Advanced Foreground Extraction Strategy
-                    </span>
-                  </div>
-                  <span className="text-[9px] font-mono font-bold text-neutral-400 uppercase tracking-wide">
-                    Avoid Cropped laptops, desks & hands
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Subject Only (Squeeze) */}
-                  <button
-                    type="button"
-                    onClick={() => setRescaleMode(true)}
-                    className={`flex items-start text-left p-3.5 rounded-xl border transition duration-150 ${
-                      rescaleMode === true
-                        ? "border-emerald-500 bg-white ring-2 ring-emerald-500/10"
-                        : "border-neutral-200 hover:border-neutral-300 bg-white/70"
-                    }`}
-                  >
-                    <div className="flex-shrink-0 mr-3 mt-0.5">
-                      <div
-                        className={`h-4.5 w-4.5 rounded-full border-2 flex items-center justify-center ${
-                          rescaleMode === true
-                            ? "border-emerald-500 bg-emerald-500 text-white"
-                            : "border-neutral-300"
-                        }`}
-                      >
-                        {rescaleMode === true && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-neutral-900 leading-tight">
-                        Focus Subject (Normal Portrait)
-                      </h4>
-                      <p className="text-[10px] text-neutral-500 mt-1 leading-normal">
-                        Squeezes image aspect ratio to isolate headshots, single
-                        people, and simple product shapes.
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* Connected Context (No Squeeze) */}
-                  <button
-                    type="button"
-                    onClick={() => setRescaleMode(false)}
-                    className={`flex items-start text-left p-3.5 rounded-xl border transition duration-150 ${
-                      rescaleMode === false
-                        ? "border-emerald-500 bg-white ring-2 ring-emerald-500/10"
-                        : "border-neutral-200 hover:border-neutral-300 bg-white/70"
-                    }`}
-                  >
-                    <div className="flex-shrink-0 mr-3 mt-0.5">
-                      <div
-                        className={`h-4.5 w-4.5 rounded-full border-2 flex items-center justify-center ${
-                          rescaleMode === false
-                            ? "border-emerald-500 bg-emerald-500 text-white"
-                            : "border-neutral-300"
-                        }`}
-                      >
-                        {rescaleMode === false && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-neutral-900 leading-tight flex items-center gap-1.5">
-                        <span>Keep Context (Precision Desk & Laptop)</span>
-                        <span className="text-[8px] bg-emerald-100 text-emerald-800 px-1 py-0.5 rounded font-mono font-extrabold uppercase shrink-0">
-                          Highly Precise
-                        </span>
-                      </h4>
-                      <p className="text-[10px] text-neutral-500 mt-1 leading-normal">
-                        Preserves original widescreen aspect ratio. Prevents
-                        cutting off tables, desks, laptops, hands, or overlays.
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-2.5 text-[11px] leading-relaxed text-neutral-500 bg-neutral-50 p-3 rounded-xl border border-neutral-100 font-medium">
-                <Info className="h-4.5 w-4.5 text-orange-500 flex-shrink-0 mt-0.5" />
-                <p>
-                  <strong>How are results processed?</strong> This app leverages
-                  latest Dichotomous Image Segmentation{" "}
-                  <strong>ISNet Neural Models</strong> running inside your
-                  secure web browser sandbox. By resolving AI models via
-                  client-side <strong>WebAssembly</strong> and{" "}
-                  <strong>ONNX Runtime Web</strong>, all images remain
-                  completely private. First run downloads the weights, while
-                  subsequent tasks isolate instantly!
-                </p>
-              </div>
             </div>
 
             {/* Core Interactive Sandbox Card layout */}
-            <div
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch max-w-5xl mx-auto w-full mb-10"
-              id="try-it-now"
-            >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch w-full mb-12" id="try-it-now">
+              
               {/* UPLOAD ZONE (7 Cols wide) */}
               <div className="lg:col-span-7 flex flex-col">
                 <div
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className={`flex-1 flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed transition-all relative ${
-                    isDraggingOver
-                      ? "border-orange-500 bg-orange-50/50 scale-[0.99] shadow-inner"
-                      : "border-neutral-200 bg-neutral-50/50 hover:bg-neutral-55/40 hover:border-orange-200"
+                  className={`flex-1 flex flex-col items-center justify-center p-10 rounded-2xl border-2 border-dashed transition-all relative ${
+                    isDraggingOver 
+                      ? 'border-orange-500 bg-orange-500/10' 
+                      : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-orange-500/30'
                   }`}
                   id="dropzone-area"
                 >
@@ -1196,108 +1122,93 @@ export default function App() {
                   />
 
                   {/* Icon circle */}
-                  <div className="h-16 w-16 rounded-2xl bg-white shadow-md flex items-center justify-center text-orange-500 mb-5 border border-neutral-100">
-                    <Upload
-                      className="h-7 w-7 animate-bounce"
-                      style={{ animationDuration: "3s" }}
-                    />
+                  <div className="h-14 w-14 rounded-xl bg-zinc-950 shadow-sm flex items-center justify-center text-orange-500 mb-6 border border-zinc-800">
+                    <Upload className="h-6 w-6" />
                   </div>
 
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:bg-orange-400 active:scale-95 transition"
+                    className="rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-orange-600 active:scale-98 transition duration-150"
                     id="btn-upload-trigger"
                   >
-                    Select Local Image
+                    Select Photo
                   </button>
 
-                  <p className="mt-4 text-xs font-semibold text-neutral-400">
-                    or drag and drop your photo here
+                  <p className="mt-4 text-xs font-semibold text-zinc-500 animate-pulse">
+                    or drag and drop your file here
                   </p>
 
-                  <p className="mt-2 text-[11px] text-neutral-400 italic">
-                    Supports PNG, JPEG, WEBP. Fast offline cache.
+                  <p className="mt-2 text-[11px] text-zinc-500">
+                    Supports PNG, JPEG, WEBP.
                   </p>
 
                   {/* Quick paste indicator */}
-                  <div className="absolute bottom-3 text-[10px] text-neutral-400/80 bg-white border border-neutral-100 rounded px-2 py-0.5 shadow-sm font-mono flex items-center space-x-1.5 select-none">
-                    <span>Pro-tip: press</span>
-                    <span className="bg-neutral-100 px-1 rounded font-semibold text-[9px] text-neutral-500">
-                      Ctrl + V
-                    </span>
+                  <div className="absolute bottom-4 text-[10px] text-zinc-500 bg-zinc-950 border border-zinc-850 rounded px-2.0 py-0.5 shadow-sm font-mono flex items-center space-x-1 select-none">
+                    <span>Press</span>
+                    <span className="bg-zinc-900 px-1 rounded font-semibold text-[9px] text-zinc-400 border border-zinc-800">Ctrl + V</span>
                     <span>anywhere to paste</span>
                   </div>
                 </div>
               </div>
 
-              {/* URL PASTE & CAPABILITIES (5 Cols wide) */}
+              {/* URL PASTE & PRIVACY INFO (5 Cols wide) */}
               <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+                
                 {/* Paste URL block */}
-                <div className="p-6 rounded-2xl border border-neutral-150 bg-white/70 shadow-sm space-y-4 flex flex-col justify-center">
+                <div className="p-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 shadow-sm space-y-4 flex flex-col justify-center">
                   <div className="flex items-center space-x-2">
-                    <LinkIcon className="h-4.5 w-4.5 text-neutral-500" />
-                    <span className="font-semibold text-sm text-neutral-800">
-                      Process from Web URL
-                    </span>
+                    <LinkIcon className="h-4 w-4 text-zinc-400" />
+                    <span className="font-semibold text-sm text-zinc-100">Process from URL</span>
                   </div>
                   <form onSubmit={handleUrlSubmit} className="flex space-x-2">
                     <input
                       type="url"
-                      placeholder="Paste image URL (HTTPS)..."
+                      placeholder="Paste secure image URL (https://...)"
                       value={urlInput}
                       onChange={(e) => setUrlInput(e.target.value)}
                       required
-                      className="flex-1 min-w-0 rounded-xl border border-neutral-200 px-3 py-2.5 text-xs focus:border-orange-500 focus:outline-none bg-neutral-50/50"
+                      className="flex-1 min-w-0 rounded-xl border border-zinc-800 px-3 py-2.5 text-xs focus:border-orange-500 focus:outline-none bg-zinc-950 text-zinc-100 placeholder-zinc-500"
                       id="url-paste-input"
                     />
                     <button
                       type="submit"
                       disabled={isUrlSubmitting}
-                      className="rounded-xl bg-neutral-900 px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-neutral-850 disabled:opacity-50 transition flex-shrink-0"
+                      className="rounded-xl bg-zinc-800 px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-zinc-700 disabled:opacity-50 transition flex-shrink-0"
                       id="btn-url-submit"
                     >
                       Fetch
                     </button>
                   </form>
-                  <p className="text-[10px] text-neutral-400 leading-relaxed font-mono">
-                    Ensure the web host permits public cross-origin image
-                    sharing.
+                  <p className="text-[10px] text-zinc-500 leading-relaxed font-mono">
+                    Must be direct URL and allow CORS requests.
                   </p>
                 </div>
 
                 {/* Privacy Guarantee Block */}
-                <div className="p-6 rounded-2xl border border-neutral-150 bg-neutral-50/50 flex-1 flex flex-col justify-center space-y-3">
+                <div className="p-6 rounded-2xl border border-zinc-800 bg-zinc-900/30 flex-1 flex flex-col justify-center space-y-4">
                   <div className="flex items-start space-x-3 text-xs leading-relaxed">
-                    <div className="rounded-lg bg-emerald-100 p-1 bg-emerald-50 text-emerald-600 mt-0.5">
-                      <Check className="h-3.5 w-3.5 font-extrabold" />
+                    <div className="rounded-lg bg-emerald-500/10 p-1 text-emerald-400 mt-0.5">
+                      <Check className="h-3.5 w-3.5 font-bold" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-neutral-800 text-xs">
-                        No Server Required
-                      </h4>
-                      <p className="text-neutral-500 text-[11px] mt-0.5">
-                        The segmentation runs locally with WebAssembly. Perfect
-                        for corporate privacy-sensitive photos.
-                      </p>
+                      <h4 className="font-bold text-zinc-200 text-xs">No Server Uploads</h4>
+                      <p className="text-zinc-400 text-[11px] mt-0.5 font-medium">Your graphics are secure and private—all rendering is done via high-speed WebAssembly directly in your browser.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start space-x-3 text-xs leading-relaxed">
-                    <div className="rounded-lg bg-blue-100 p-1 bg-blue-50 text-blue-600 mt-0.5">
-                      <Check className="h-3.5 w-3.5 font-extrabold" />
+                    <div className="rounded-lg bg-orange-500/10 p-1 text-orange-400 mt-0.5">
+                      <Check className="h-3.5 w-3.5 font-bold" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-neutral-800 text-xs">
-                        Full Dynamic Backdrops
-                      </h4>
-                      <p className="text-neutral-500 text-[11px] mt-0.5">
-                        Unlocks beautiful portrait color gradients and custom
-                        desk scene mockups instantly after isolating.
-                      </p>
+                      <h4 className="font-bold text-zinc-200 text-xs">Dynamic Backdrops</h4>
+                      <p className="text-zinc-400 text-[11px] mt-0.5 font-medium">Instantly apply studio-style solid colors, subtle gradients, or blurred background templates.</p>
                     </div>
                   </div>
                 </div>
+
               </div>
+
             </div>
 
             {/* ERROR PRESENTATION */}
@@ -1305,50 +1216,44 @@ export default function App() {
               <div className="mx-auto max-w-xl w-full mb-8 rounded-xl bg-red-55 border border-red-200 p-4 flex items-start space-x-3 text-red-700">
                 <AlertCircle className="h-5 w-5 text-red-650 flex-shrink-0 mt-0.5" />
                 <div className="text-xs">
-                  <span className="font-bold leading-relaxed block">
-                    Isolation constraint encountered
-                  </span>
+                  <span className="font-bold leading-relaxed block">Isolation constraint encountered</span>
                   <p className="text-red-600 mt-0.5">{error}</p>
                 </div>
               </div>
             )}
 
             {/* DEMO IMAGES ROW TRAY */}
-            <div className="w-full max-w-5xl mx-auto border-t border-neutral-100 pt-8 mt-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 block text-center mb-5">
+            <div className="w-full max-w-5xl mx-auto border-t border-zinc-900 pt-8 mt-4">
+              <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 block text-center mb-5 animate-pulse">
                 Don&apos;t have an image? Try one of these presets:
               </span>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {SAMPLE_IMAGES.map((sample) => (
                   <button
                     key={sample.id}
-                    onClick={() =>
-                      processImage(sample.url, `${sample.id}_trial.png`)
-                    }
-                    className="group flex flex-col text-left rounded-xl border border-neutral-150 overflow-hidden bg-white shadow-sm hover:border-orange-500 hover:shadow-md transition duration-200 relative"
+                    onClick={() => initiateImageSelect(sample.url, `${sample.id}_trial.png`)}
+                    className="group flex flex-col text-left rounded-xl border border-zinc-850 overflow-hidden bg-zinc-900/60 shadow-sm hover:bg-zinc-900 hover:border-orange-500/40 hover:shadow-md transition duration-205 relative"
                     id={`demo-trigger-${sample.id}`}
                   >
-                    <div className="aspect-[4/3] w-full overflow-hidden bg-neutral-50 relative">
+                    <div className="aspect-[4/3] w-full overflow-hidden bg-zinc-950 relative">
                       <img
                         src={sample.url}
                         alt={sample.name}
                         className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
                         referrerPolicy="no-referrer"
                       />
-                      <span className="absolute top-2 left-2 rounded-md bg-neutral-900/80 px-2 py-0.5 text-[9px] font-bold text-white tracking-wide">
+                      <span className="absolute top-2 left-2 rounded-md bg-zinc-950/95 px-2 py-0.5 text-[9px] font-bold text-white tracking-wide border border-zinc-800">
                         {sample.type}
                       </span>
                     </div>
                     <div className="p-3 flex items-center justify-between">
                       <div>
-                        <span className="text-xs font-bold text-neutral-800 block text-ellipsis overflow-hidden whitespace-nowrap max-w-[120px]">
+                        <span className="text-xs font-bold text-zinc-200 block text-ellipsis overflow-hidden whitespace-nowrap max-w-[120px]">
                           {sample.name}
                         </span>
-                        <span className="text-[10px] text-orange-600 font-semibold mt-0.5 block">
-                          {sample.badge}
-                        </span>
+                        <span className="text-[10px] text-orange-400 font-semibold mt-0.5 block">{sample.badge}</span>
                       </div>
-                      <span className="h-6 w-6 rounded-full bg-neutral-150 group-hover:bg-orange-500 text-neutral-500 group-hover:text-white flex items-center justify-center text-xs font-bold transition">
+                      <span className="h-6 w-6 rounded-full bg-zinc-800 group-hover:bg-orange-500 text-zinc-400 group-hover:text-white flex items-center justify-center text-xs font-bold transition">
                         →
                       </span>
                     </div>
@@ -1356,30 +1261,27 @@ export default function App() {
                 ))}
               </div>
             </div>
+
+
+
           </section>
         )}
 
         {/* VIEW 2: LOADING OR ACTIVE WORKSPACE */}
         {currentImage && (
-          <section
-            id="workspace-panel"
-            className="flex-1 flex flex-col bg-neutral-50/50"
-          >
-            <div className="w-full border-b border-neutral-150 bg-white py-3.5">
+          <section id="workspace-panel" className="flex-1 flex flex-col bg-zinc-950">
+            <div className="w-full border-b border-zinc-850 bg-zinc-900 py-3.5">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="h-8 w-8 rounded bg-neutral-100 flex items-center justify-center text-neutral-500 border border-neutral-200">
+                  <div className="h-8 w-8 rounded bg-zinc-950 flex items-center justify-center text-zinc-400 border border-zinc-850">
                     <FileImage className="h-4.5 w-4.5" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-bold text-neutral-900 leading-tight block truncate max-w-[190px] sm:max-w-xs">
+                    <h2 className="text-sm font-bold text-white leading-tight block truncate max-w-[190px] sm:max-w-xs">
                       {currentImage.name}
                     </h2>
-                    <span className="text-[10px] font-mono font-semibold text-neutral-400">
-                      {formatBytes(currentImage.size)} •{" "}
-                      {currentImage.width > 0
-                        ? `${currentImage.width} x ${currentImage.height}px`
-                        : "Calculating dimension..."}
+                    <span className="text-[10px] font-mono font-semibold text-zinc-500">
+                      {formatBytes(currentImage.size)} • {currentImage.width > 0 ? `${currentImage.width} x ${currentImage.height}px` : 'Calculating dimension...'}
                     </span>
                   </div>
                 </div>
@@ -1387,34 +1289,26 @@ export default function App() {
                 {/* Reset or New Image upload and Engine switcher */}
                 <div className="flex items-center space-x-2.5">
                   {/* On-the-fly quality mode switcher segment */}
-                  <div className="hidden lg:flex items-center space-x-1 bg-neutral-100 p-1.5 rounded-xl border border-neutral-200">
-                    <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest px-2 font-mono">
-                      Engine Profile:
-                    </span>
-
+                  <div className="hidden lg:flex items-center space-x-1 bg-zinc-950 p-1.5 rounded-xl border border-zinc-850">
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest px-2 font-mono">Engine Profile:</span>
+                    
                     <button
                       onClick={async () => {
-                        const nextMod = "isnet_quint8";
+                        const nextMod = 'isnet_quint8';
                         setQualityMode(nextMod);
                         // Trigger immediate reprocessing with this qualityMode if original is available
                         setTimeout(() => {
-                          if (currentImage.originalFile) {
-                            processImage(
-                              currentImage.originalFile,
-                              currentImage.name,
-                            );
-                          } else if (currentImage.originalUrl) {
-                            processImage(
-                              currentImage.originalUrl,
-                              currentImage.name,
-                            );
-                          }
+                           if (currentImage.originalFile) {
+                             processImage(currentImage.originalFile, currentImage.name);
+                           } else if (currentImage.originalUrl) {
+                             processImage(currentImage.originalUrl, currentImage.name);
+                           }
                         }, 50);
                       }}
                       className={`px-2 py-1 rounded-lg text-[10px] font-bold transition flex items-center space-x-1 ${
-                        qualityMode === "isnet_quint8"
-                          ? "bg-neutral-900 text-white shadow-sm"
-                          : "text-neutral-500 hover:text-neutral-950 hover:bg-neutral-200/40"
+                        qualityMode === 'isnet_quint8'
+                          ? 'bg-zinc-850 text-white shadow-sm border border-zinc-750'
+                          : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
                       }`}
                       title="Draft quality, runs 10x faster (11MB weights)"
                     >
@@ -1423,26 +1317,20 @@ export default function App() {
 
                     <button
                       onClick={async () => {
-                        const nextMod = "isnet_fp16";
+                        const nextMod = 'isnet_fp16';
                         setQualityMode(nextMod);
                         setTimeout(() => {
                           if (currentImage.originalFile) {
-                            processImage(
-                              currentImage.originalFile,
-                              currentImage.name,
-                            );
+                            processImage(currentImage.originalFile, currentImage.name);
                           } else if (currentImage.originalUrl) {
-                            processImage(
-                              currentImage.originalUrl,
-                              currentImage.name,
-                            );
+                            processImage(currentImage.originalUrl, currentImage.name);
                           }
                         }, 50);
                       }}
                       className={`px-2 py-1 rounded-lg text-[10px] font-bold transition flex items-center space-x-1 ${
-                        qualityMode === "isnet_fp16"
-                          ? "bg-neutral-900 text-white shadow-sm"
-                          : "text-neutral-500 hover:text-neutral-950 hover:bg-neutral-200/40"
+                        qualityMode === 'isnet_fp16'
+                          ? 'bg-zinc-850 text-white shadow-sm border border-zinc-750'
+                          : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
                       }`}
                       title="Standard float16, fast & high precision (22MB weights)"
                     >
@@ -1451,26 +1339,20 @@ export default function App() {
 
                     <button
                       onClick={async () => {
-                        const nextMod = "isnet";
+                        const nextMod = 'isnet';
                         setQualityMode(nextMod);
                         setTimeout(() => {
                           if (currentImage.originalFile) {
-                            processImage(
-                              currentImage.originalFile,
-                              currentImage.name,
-                            );
+                            processImage(currentImage.originalFile, currentImage.name);
                           } else if (currentImage.originalUrl) {
-                            processImage(
-                              currentImage.originalUrl,
-                              currentImage.name,
-                            );
+                            processImage(currentImage.originalUrl, currentImage.name);
                           }
                         }, 50);
                       }}
                       className={`px-2 py-1 rounded-lg text-[10px] font-bold transition flex items-center space-x-1 ${
-                        qualityMode === "isnet"
-                          ? "bg-neutral-900 text-white shadow-sm"
-                          : "text-neutral-500 hover:text-neutral-950 hover:bg-neutral-200/40"
+                        qualityMode === 'isnet'
+                          ? 'bg-zinc-850 text-white shadow-sm border border-zinc-750'
+                          : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
                       }`}
                       title="Full studio float32, maximum boundary edge accuracy (44MB weights)"
                     >
@@ -1480,7 +1362,7 @@ export default function App() {
 
                   <button
                     onClick={() => setCurrentImage(null)}
-                    className="rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 px-3.5 py-1.5 text-xs font-semibold text-neutral-700 transition flex items-center space-x-1"
+                    className="rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-850 px-3.5 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition flex items-center space-x-1"
                     id="btn-upload-another"
                   >
                     <RefreshCw className="h-3 w-3" />
@@ -1491,68 +1373,62 @@ export default function App() {
             </div>
 
             {/* RUNNING LOADER */}
-            {currentImage.status === "loading" && (
-              <div className="flex-1 flex flex-col items-center justify-center py-20 px-4">
+            {currentImage.status === 'loading' && (
+              <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 bg-zinc-950">
                 <div className="max-w-md w-full text-center space-y-6">
+                  
                   {/* Elegant central spinner */}
                   <div className="relative w-24 h-24 mx-auto">
                     {/* Pulsing ring background */}
-                    <div className="absolute inset-0 rounded-full border-4 border-orange-100 animate-ping opacity-75" />
+                    <div className="absolute inset-0 rounded-full border-4 border-orange-500/10 animate-ping opacity-75" />
                     {/* Spinning active indicator */}
-                    <div
-                      className="absolute inset-0 rounded-full border-4 border-transparent border-t-orange-500 animate-spin"
-                      style={{ animationDuration: "0.8s" }}
-                    />
+                    <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-orange-500 animate-spin" style={{ animationDuration: '0.8s' }} />
                     {/* Inner percentage container */}
-                    <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center shadow-md border border-neutral-100 font-mono text-sm font-extrabold text-orange-600">
+                    <div className="absolute inset-2 bg-zinc-900 rounded-full flex items-center justify-center shadow-md border border-zinc-800 font-mono text-sm font-extrabold text-orange-500">
                       {currentImage.progress}%
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-base font-bold text-neutral-900">
-                      {currentImage.progressStep.includes("Uploading")
-                        ? "Uploading, please wait..."
-                        : "Removing background..."}
+                    <h3 className="text-base font-bold text-white">
+                      {currentImage.progressStep}
                     </h3>
-                    <p className="text-xs text-neutral-400 font-sans font-medium max-w-xs mx-auto animate-pulse">
-                      {currentImage.progressStep.includes("Uploading")
-                        ? "Please wait..."
-                        : "Almost done..."}
+                    <p className="text-xs text-zinc-400 font-sans font-medium max-w-xs mx-auto animate-pulse">
+                      {currentImage.progress < 30 ? 'Setting up edge vectors...' : currentImage.progress < 90 ? 'Isolating pixel boundaries...' : 'Restoring high-res details...'}
                     </p>
                   </div>
 
                   {/* Visual Progress bar */}
-                  <div className="h-1.5 w-full bg-neutral-200 rounded-full overflow-hidden">
-                    <div
+                  <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-850">
+                    <div 
                       className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-300"
                       style={{ width: `${currentImage.progress}%` }}
                     />
                   </div>
 
-                  <p className="text-[10px] text-neutral-400 italic">
-                    First run might take up to 20 seconds to fetch AI weight
-                    libraries. Consecutive trials occur instantly in offline
-                    state.
+                  <p className="text-[10px] text-zinc-500 italic">
+                    First run might take up to 20 seconds to fetch required local parameters. Consecutive trials occur instantly in offline state.
                   </p>
                 </div>
               </div>
             )}
 
             {/* PROCESS COMPLETION WORKSPACE */}
-            {currentImage.status === "completed" && (
+            {currentImage.status === 'completed' && (
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
                 {/* COLUMN 1: INTERACTIVE DISPLAY CORE (7 Columns wide) */}
                 <div className="lg:col-span-7 flex flex-col space-y-4">
+                  
                   {/* View mode toggle tabs */}
-                  <div className="flex items-center justify-between border-b border-neutral-150 pb-2">
+                  <div className="flex items-center justify-between border-b border-zinc-850 pb-2">
                     <div className="flex space-x-1">
                       <button
-                        onClick={() => setActiveTab("compare")}
+                        onClick={() => setActiveTab('compare')}
                         className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                          activeTab === "compare"
-                            ? "bg-neutral-900 text-white shadow-sm"
-                            : "text-neutral-500 hover:text-neutral-900"
+                          activeTab === 'compare'
+                            ? 'bg-zinc-800 text-white shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-150'
                         }`}
                         id="tab-btn-compare"
                       >
@@ -1561,11 +1437,11 @@ export default function App() {
                       </button>
 
                       <button
-                        onClick={() => setActiveTab("backdrop")}
+                        onClick={() => setActiveTab('backdrop')}
                         className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                          activeTab === "backdrop"
-                            ? "bg-neutral-900 text-white shadow-sm"
-                            : "text-neutral-500 hover:text-neutral-900"
+                          activeTab === 'backdrop'
+                            ? 'bg-zinc-800 text-white shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-150'
                         }`}
                         id="tab-btn-backdrop"
                       >
@@ -1576,8 +1452,8 @@ export default function App() {
 
                     {/* Manual Cutout Indicator badge */}
                     {usingFallback && (
-                      <div className="inline-flex items-center space-x-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 font-semibold">
-                        <ShieldAlert className="h-3 w-3 text-amber-600 flex-shrink-0" />
+                      <div className="inline-flex items-center space-x-1 text-[10px] text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5 font-semibold">
+                        <ShieldAlert className="h-3 w-3 text-amber-400 flex-shrink-0" />
                         <span>Contour Fallback Active</span>
                       </div>
                     )}
@@ -1585,19 +1461,17 @@ export default function App() {
 
                   {/* DISPLAY WORKSPACE */}
                   <div className="aspect-[4/3] w-full relative min-h-[340px]">
-                    {activeTab === "compare" ? (
+                    {activeTab === 'compare' ? (
                       /* Dual compare slider module */
                       <CompareSlider
                         originalUrl={currentImage.originalUrl}
-                        processedUrl={
-                          currentImage.editedUrl || currentImage.processedUrl!
-                        }
+                        processedUrl={currentImage.editedUrl || currentImage.processedUrl!}
                         className="h-full w-full"
                         hasTransparentGrid={true}
                       />
                     ) : (
                       /* Sandbox layout rendering chosen color/image background with blur */
-                      <div className="relative h-full w-full overflow-hidden rounded-xl border border-neutral-200 shadow-sm flex items-center justify-center bg-checkerboard bg-neutral-100">
+                      <div className="relative h-full w-full overflow-hidden rounded-xl border border-zinc-800 shadow-sm flex items-center justify-center bg-checkerboard bg-zinc-950">
                         {/* Static CSS dynamic background styling */}
                         <div
                           className="absolute inset-0 h-full w-full transition-all duration-300 pointer-events-none"
@@ -1606,16 +1480,14 @@ export default function App() {
 
                         {/* Centered isolated foreground image */}
                         <img
-                          src={
-                            currentImage.editedUrl || currentImage.processedUrl
-                          }
+                          src={currentImage.editedUrl || currentImage.processedUrl}
                           alt="Cropped Subject"
                           className="relative max-h-full max-w-full object-contain z-10 p-4 drop-shadow-lg"
                           draggable={false}
                           referrerPolicy="no-referrer"
                         />
 
-                        <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm z-20 select-none">
+                        <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm z-20 select-none border border-zinc-800">
                           Current Preview
                         </span>
                       </div>
@@ -1623,45 +1495,34 @@ export default function App() {
                   </div>
 
                   {/* DIRECT CORRECTION NOTICE BANNER AND QUICK REFINE PORT */}
-                  <div className="bg-amber-50/60 border border-amber-200/60 rounded-2xl p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                  <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
                     <div className="flex items-start space-x-3">
-                      <div className="p-2 rounded-xl bg-amber-100 text-amber-800 flex-shrink-0 mt-0.5">
-                        <Sparkles className="h-4.5 w-4.5 text-amber-700 animate-pulse" />
+                      <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 flex-shrink-0 mt-0.5 border border-amber-500/15">
+                        <Info className="h-4.5 w-4.5 text-amber-400 font-bold" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs font-bold text-amber-900 leading-tight">
-                          Laptop, desk or arms cropped out by mistake?
-                        </p>
-                        <p className="text-[11px] text-amber-700 leading-relaxed">
-                          AI models focus mostly on human silhouettes and ignore
-                          inanimate furniture. Open the editor and use the new{" "}
-                          <strong>Smart Wand</strong> tool: simply click on the
-                          missing laptop or table, and the editor will
-                          auto-detect and restore the entire object instantly!
+                        <p className="text-xs font-bold text-amber-300 leading-tight">Laptop, desk or arms cropped out by mistake?</p>
+                        <p className="text-[11px] text-zinc-400 leading-relaxed">
+                          Segmentation algorithms focus mostly on human silhouettes and ignore inanimate furniture. Open the editor and use the new <strong>Smart Wand</strong> tool: simply click on the missing laptop or table, and the editor will auto-detect and restore the entire object instantly!
                         </p>
                       </div>
                     </div>
-
+                    
                     <button
                       type="button"
                       onClick={() => setIsBrushEditorOpen(true)}
                       className="px-4.5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-amber-600/15 transition flex items-center justify-center space-x-1.5 whitespace-nowrap self-stretch sm:self-center"
                     >
-                      <Sparkles className="h-3.5 w-3.5" />
+                      <Scissors className="h-3.5 w-3.5" />
                       <span>Open Smart Refiner</span>
                     </button>
                   </div>
 
                   {/* CORE COMMANDS ROW (Download Button trigger) */}
-                  <div className="bg-white rounded-xl border border-neutral-150 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                     <div className="text-center sm:text-left">
-                      <span className="text-[11px] font-bold text-neutral-400 block uppercase tracking-wider">
-                        Ready to Export
-                      </span>
-                      <p className="text-xs text-neutral-500 mt-0.5">
-                        High-quality PNG processed entirely inside your browser
-                        sandbox.
-                      </p>
+                      <span className="text-[11px] font-bold text-zinc-500 block uppercase tracking-wider">Ready to Export</span>
+                      <p className="text-xs text-zinc-400 mt-0.5">High-quality PNG processed entirely inside your browser sandbox.</p>
                     </div>
 
                     <div className="flex items-center space-x-3 w-full sm:w-auto">
@@ -1677,7 +1538,7 @@ export default function App() {
                       {/* Premium simulation HD download CTA */}
                       <button
                         onClick={triggerImageDownload}
-                        className="hidden sm:inline-flex items-center space-x-2 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 px-4 py-3.5 text-xs font-bold text-neutral-700 transition"
+                        className="hidden sm:inline-flex items-center space-x-2 rounded-xl border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 px-4 py-3.5 text-xs font-bold text-zinc-300 transition"
                         title="Download unaltered original high resolution"
                       >
                         <Check className="h-4 w-4 text-emerald-500" />
@@ -1685,73 +1546,61 @@ export default function App() {
                       </button>
                     </div>
                   </div>
+
                 </div>
 
                 {/* COLUMN 2: CUSTOM BACKDROPS PANEL & BRUSH SIDEBAR (5 Columns wide) */}
                 <div className="lg:col-span-5 flex flex-col space-y-6">
+                  
                   {/* FINE-TUNE CROP BRUSH CTA MANDATE */}
-                  <div className="bg-white rounded-2xl border border-neutral-150 p-5 shadow-sm space-y-3">
+                  <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-5 shadow-sm space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <div className="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600 font-bold">
+                        <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400 font-bold border border-orange-500/15">
                           <Scissors className="h-4 w-4" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-neutral-900">
-                            Fine-Tune Brushes
-                          </h4>
-                          <p className="text-[10px] text-neutral-400">
-                            Perfect edge details manually
-                          </p>
+                          <h4 className="text-xs font-bold text-white">Fine-Tune Brushes</h4>
+                          <p className="text-[10px] text-zinc-500">Perfect edge details manually</p>
                         </div>
                       </div>
 
                       <button
                         onClick={() => setIsBrushEditorOpen(true)}
-                        className="px-4 py-2 bg-orange-50 border border-orange-200 rounded-xl text-orange-600 font-extrabold text-xs hover:bg-orange-100 transition flex items-center space-x-1"
+                        className="px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400 font-extrabold text-xs hover:bg-orange-500/25 transition flex items-center space-x-1"
                         id="btn-open-eraser-brush"
                       >
                         <span>Erase / Restore</span>
                       </button>
                     </div>
-                    <p className="text-[11px] text-neutral-500 leading-relaxed font-mono">
-                      Did the AI miss any hair details or strap lines? Click
-                      above to rub out or bring back parts of the image with a
-                      customized cursor brush!
+                    <p className="text-[11px] text-zinc-400 leading-relaxed font-mono">
+                      Did the automatic cutting miss any hair details or strap lines? Click above to rub out or bring back parts of the image with a customized cursor brush!
                     </p>
                   </div>
 
                   {/* BACKDROP CONTROL PANEL */}
-                  <div
-                    id="backdrop-preset-section"
-                    className="bg-white rounded-2xl border border-neutral-150 p-5 shadow-sm space-y-5"
-                  >
+                  <div id="backdrop-preset-section" className="bg-zinc-900 rounded-2xl border border-zinc-800 p-5 shadow-sm space-y-5">
+                    
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5 flex items-center space-x-1.5">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5 flex items-center space-x-1.5">
                         <Palette className="h-4 w-4 text-orange-500" />
                         <span>1. Background Backdrops</span>
                       </h4>
-                      <p className="text-[10px] text-neutral-400 leading-tight">
-                        Replace the transparent layout with vibrant artistic
-                        themes
-                      </p>
+                      <p className="text-[10px] text-zinc-500 leading-tight">Replace the transparent layout with vibrant artistic themes</p>
                     </div>
 
                     {/* Quick presets group tabs selector */}
-                    <div className="grid grid-cols-4 gap-1.5 bg-neutral-100 p-1 rounded-xl text-center">
+                    <div className="grid grid-cols-4 gap-1.5 bg-zinc-950 p-1 rounded-xl text-center border border-zinc-850">
                       <button
                         onClick={() => {
-                          setEditorSettings((prev) => ({
-                            ...prev,
-                            backgroundType: "transparent",
-                          }));
-                          setSelectedPresetId("transparent");
-                          setActiveTab("backdrop");
+                          setEditorSettings(prev => ({ ...prev, backgroundType: 'transparent' }));
+                          setSelectedPresetId('transparent');
+                          setActiveTab('backdrop');
                         }}
                         className={`py-1.5 rounded-lg text-xs font-bold transition ${
-                          editorSettings.backgroundType === "transparent"
-                            ? "bg-white text-neutral-900 shadow-sm"
-                            : "text-neutral-500 hover:text-neutral-800"
+                          editorSettings.backgroundType === 'transparent'
+                            ? 'bg-zinc-800 text-white shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         Transparent
@@ -1759,17 +1608,14 @@ export default function App() {
 
                       <button
                         onClick={() => {
-                          setEditorSettings((prev) => ({
-                            ...prev,
-                            backgroundType: "color",
-                          }));
+                          setEditorSettings(prev => ({ ...prev, backgroundType: 'color' }));
                           selectPreset(COLOR_PRESETS[0]);
-                          setActiveTab("backdrop");
+                          setActiveTab('backdrop');
                         }}
                         className={`py-1.5 rounded-lg text-xs font-bold transition ${
-                          editorSettings.backgroundType === "color"
-                            ? "bg-white text-neutral-900 shadow-sm"
-                            : "text-neutral-500 hover:text-neutral-800"
+                          editorSettings.backgroundType === 'color'
+                            ? 'bg-zinc-800 text-white shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         Colors
@@ -1777,17 +1623,14 @@ export default function App() {
 
                       <button
                         onClick={() => {
-                          setEditorSettings((prev) => ({
-                            ...prev,
-                            backgroundType: "gradient",
-                          }));
+                          setEditorSettings(prev => ({ ...prev, backgroundType: 'gradient' }));
                           selectPreset(GRADIENT_PRESETS[0]);
-                          setActiveTab("backdrop");
+                          setActiveTab('backdrop');
                         }}
                         className={`py-1.5 rounded-lg text-xs font-bold transition ${
-                          editorSettings.backgroundType === "gradient"
-                            ? "bg-white text-neutral-900 shadow-sm"
-                            : "text-neutral-500 hover:text-neutral-800"
+                          editorSettings.backgroundType === 'gradient'
+                            ? 'bg-zinc-800 text-white shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         Gradients
@@ -1795,17 +1638,14 @@ export default function App() {
 
                       <button
                         onClick={() => {
-                          setEditorSettings((prev) => ({
-                            ...prev,
-                            backgroundType: "image",
-                          }));
+                          setEditorSettings(prev => ({ ...prev, backgroundType: 'image' }));
                           selectPreset(IMAGE_PRESETS[0]);
-                          setActiveTab("backdrop");
+                          setActiveTab('backdrop');
                         }}
                         className={`py-1.5 rounded-lg text-xs font-bold transition ${
-                          editorSettings.backgroundType === "image"
-                            ? "bg-white text-neutral-900 shadow-sm"
-                            : "text-neutral-500 hover:text-neutral-800"
+                          editorSettings.backgroundType === 'image'
+                            ? 'bg-zinc-800 text-white shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         Artistic
@@ -1814,46 +1654,38 @@ export default function App() {
 
                     {/* RENDER ACTIVE TILE SELECTION LIST */}
                     <div className="space-y-4">
-                      {editorSettings.backgroundType === "transparent" && (
-                        <div className="h-28 rounded-xl border border-dashed border-neutral-200 flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 transition cursor-pointer select-none">
+                      {editorSettings.backgroundType === 'transparent' && (
+                        <div className="h-28 rounded-xl border border-dashed border-zinc-800 flex items-center justify-center bg-zinc-950 hover:bg-zinc-900 transition cursor-pointer select-none">
                           <div className="text-center space-y-1 p-4">
                             <Check className="h-6 w-6 text-emerald-500 mx-auto" />
-                            <span className="text-xs font-bold text-neutral-800">
-                              Transparent PNG Export Selected
-                            </span>
-                            <p className="text-[10px] text-neutral-400">
-                              Suitable for graphic designs, logos, and catalogs.
-                            </p>
+                            <span className="text-xs font-bold text-zinc-200">Transparent PNG Export Selected</span>
+                            <p className="text-[10px] text-zinc-500">Suitable for graphic designs, logos, and catalogs.</p>
                           </div>
                         </div>
                       )}
 
                       {/* Display SOLID COLORS slider catalog */}
-                      {editorSettings.backgroundType === "color" && (
+                      {editorSettings.backgroundType === 'color' && (
                         <div>
-                          <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-2">
-                            Select Solid backdrop Color:
-                          </span>
+                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-2">Select Solid backdrop Color:</span>
                           <div className="grid grid-cols-5 gap-2.5">
-                            {COLOR_PRESETS.map((preset) => (
+                            {COLOR_PRESETS.map(preset => (
                               <button
                                 key={preset.id}
                                 onClick={() => {
                                   selectPreset(preset);
-                                  setActiveTab("backdrop");
+                                  setActiveTab('backdrop');
                                 }}
                                 className={`aspect-square w-full rounded-xl border transition-all relative flex items-center justify-center ${
-                                  selectedPresetId === preset.id
-                                    ? "ring-2 ring-orange-500 ring-offset-2 scale-95 border-transparent"
-                                    : "border-neutral-200 hover:scale-105"
+                                  selectedPresetId === preset.id 
+                                    ? 'ring-2 ring-orange-500 scale-95 border-transparent' 
+                                    : 'border-zinc-800 hover:scale-105'
                                 }`}
                                 style={{ backgroundColor: preset.value }}
                                 title={preset.name}
                               >
                                 {selectedPresetId === preset.id && (
-                                  <Check
-                                    className={`h-4.5 w-4.5 ${preset.value === "#FFFFFF" || preset.value === "#F3F4F6" ? "text-neutral-800" : "text-white"}`}
-                                  />
+                                  <Check className={`h-4.5 w-4.5 ${preset.value === '#FFFFFF' || preset.value === '#F3F4F6' ? 'text-zinc-950 font-bold' : 'text-white'}`} />
                                 )}
                               </button>
                             ))}
@@ -1862,23 +1694,21 @@ export default function App() {
                       )}
 
                       {/* Display ARTISTIC INDIVIDUAL GRADIENTS catalog */}
-                      {editorSettings.backgroundType === "gradient" && (
+                      {editorSettings.backgroundType === 'gradient' && (
                         <div>
-                          <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-2">
-                            Select Gradient flow:
-                          </span>
+                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-2">Select Gradient flow:</span>
                           <div className="grid grid-cols-4 gap-2">
-                            {GRADIENT_PRESETS.map((preset) => (
+                            {GRADIENT_PRESETS.map(preset => (
                               <button
                                 key={preset.id}
                                 onClick={() => {
                                   selectPreset(preset);
-                                  setActiveTab("backdrop");
+                                  setActiveTab('backdrop');
                                 }}
                                 className={`h-11 rounded-xl border transition-all flex items-center justify-center relative ${
-                                  selectedPresetId === preset.id
-                                    ? "ring-2 ring-orange-500 ring-offset-2 border-transparent scale-95"
-                                    : "border-neutral-200 hover:scale-[1.03]"
+                                  selectedPresetId === preset.id 
+                                    ? 'ring-2 ring-orange-500 border-transparent scale-95' 
+                                    : 'border-zinc-800 hover:scale-[1.03]'
                                 }`}
                                 style={{ background: preset.value }}
                                 title={preset.name}
@@ -1893,22 +1723,18 @@ export default function App() {
                       )}
 
                       {/* Display HIGH RESOLUTION ART EXPERIENCES catalog */}
-                      {editorSettings.backgroundType === "image" && (
+                      {editorSettings.backgroundType === 'image' && (
                         <div className="space-y-4">
-                          <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
-                            Choose Landscape backdrops:
-                          </span>
+                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Choose Landscape backdrops:</span>
                           <div className="grid grid-cols-4 gap-2">
                             {/* Upload custom background CTA */}
                             <button
                               onClick={() => bgFileInputRef.current?.click()}
-                              className="aspect-square rounded-xl border-2 border-dashed border-neutral-200 bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center justify-center text-neutral-400 font-bold transition focus:outline-none"
+                              className="aspect-square rounded-xl border-2 border-dashed border-zinc-850 bg-zinc-950 hover:bg-zinc-900 flex flex-col items-center justify-center text-zinc-500 font-bold transition focus:outline-none"
                               title="Upload custom background picture"
                             >
-                              <Plus className="h-5 w-5 text-neutral-500" />
-                              <span className="text-[8px] mt-1 font-sans">
-                                Custom
-                              </span>
+                              <Plus className="h-5 w-5 text-zinc-400" />
+                              <span className="text-[8px] mt-1 font-sans text-zinc-500">Custom</span>
                             </button>
                             <input
                               ref={bgFileInputRef}
@@ -1919,17 +1745,17 @@ export default function App() {
                             />
 
                             {/* Presets iterator */}
-                            {IMAGE_PRESETS.map((preset) => (
+                            {IMAGE_PRESETS.map(preset => (
                               <button
                                 key={preset.id}
                                 onClick={() => {
                                   selectPreset(preset);
-                                  setActiveTab("backdrop");
+                                  setActiveTab('backdrop');
                                 }}
                                 className={`aspect-square rounded-xl border overflow-hidden relative transition-all ${
-                                  selectedPresetId === preset.id
-                                    ? "ring-2 ring-orange-500 ring-offset-2 border-transparent scale-95"
-                                    : "border-neutral-200 hover:scale-[1.03]"
+                                  selectedPresetId === preset.id 
+                                    ? 'ring-2 ring-orange-500 border-transparent scale-95' 
+                                    : 'border-zinc-850 hover:scale-[1.03]'
                                 }`}
                                 title={preset.name}
                               >
@@ -1938,7 +1764,7 @@ export default function App() {
                                   alt={preset.name}
                                   className="h-full w-full object-cover"
                                   referrerPolicy="no-referrer"
-                                />
+                               />
                                 {selectedPresetId === preset.id && (
                                   <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
                                     <Check className="h-5 w-5 text-white" />
@@ -1949,35 +1775,30 @@ export default function App() {
                           </div>
 
                           {/* ARTISTIC BLUR CONVERSION LAYOUT */}
-                          <div className="space-y-2 border-t border-neutral-100 pt-3">
+                          <div className="space-y-2 border-t border-zinc-850 pt-3">
                             <div className="flex justify-between items-center text-xs">
-                              <span className="font-bold text-neutral-700 flex items-center space-x-1">
-                                <Sliders className="h-3.5 w-3.5 text-neutral-400" />
+                              <span className="font-bold text-zinc-200 flex items-center space-x-1">
+                                <Sliders className="h-3.5 w-3.5 text-zinc-500" />
                                 <span>Background Blur Effect</span>
                               </span>
-                              <span className="font-mono text-orange-600 font-bold">
-                                {editorSettings.blurValue === 0
-                                  ? "None"
-                                  : `${editorSettings.blurValue}px`}
+                              <span className="font-mono text-orange-400 font-bold">
+                                {editorSettings.blurValue === 0 ? 'None' : `${editorSettings.blurValue}px`}
                               </span>
                             </div>
-
+                            
                             <input
                               type="range"
                               min="0"
                               max="20"
                               value={editorSettings.blurValue}
                               onChange={(e) => {
-                                setEditorSettings((prev) => ({
-                                  ...prev,
-                                  blurValue: Number(e.target.value),
-                                }));
-                                setActiveTab("backdrop");
+                                setEditorSettings(prev => ({ ...prev, blurValue: Number(e.target.value) }));
+                                setActiveTab('backdrop');
                               }}
-                              className="w-full accent-orange-500 h-1.5 bg-neutral-100 rounded-lg cursor-pointer"
+                              className="w-full accent-orange-500 h-1.5 bg-zinc-950 rounded-lg cursor-pointer"
                             />
-
-                            <div className="flex justify-between text-[9px] text-neutral-400 font-mono font-medium">
+                            
+                            <div className="flex justify-between text-[9px] text-zinc-500 font-mono font-medium">
                               <span>Sharp (0px)</span>
                               <span>Soft</span>
                               <span>Moody (10px)</span>
@@ -1987,35 +1808,32 @@ export default function App() {
                         </div>
                       )}
                     </div>
+
                   </div>
 
                   {/* HISTORY LOGS OF PREVIOUSLY PROCESSED IMAGES DURING SESSION */}
                   {sessionHistory.length > 1 && (
-                    <div className="bg-white rounded-2xl border border-neutral-150 p-5 shadow-sm space-y-3">
-                      <div className="flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-neutral-400">
+                    <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-5 shadow-sm space-y-3">
+                      <div className="flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-zinc-500">
                         <History className="h-4 w-4" />
                         <span>Session History</span>
                       </div>
                       <div className="flex items-center gap-3 overflow-x-auto pb-1">
-                        {sessionHistory.map((histImg) => (
+                        {sessionHistory.map(histImg => (
                           <button
                             key={histImg.id}
                             onClick={() => {
                               setCurrentImage(histImg);
-                              setActiveTab("compare");
+                              setActiveTab('compare');
                             }}
-                            className={`flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border border-neutral-200 transition-all ${
-                              currentImage.id === histImg.id
-                                ? "ring-2 ring-orange-500 ring-offset-1 border-transparent scale-95"
-                                : "hover:scale-105"
+                            className={`flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border border-zinc-850 transition-all ${
+                              currentImage.id === histImg.id 
+                                ? 'ring-2 ring-orange-500 border-transparent scale-95' 
+                                : 'hover:scale-105'
                             }`}
                           >
                             <img
-                              src={
-                                histImg.editedUrl ||
-                                histImg.processedUrl ||
-                                histImg.originalUrl
-                              }
+                              src={histImg.editedUrl || histImg.processedUrl || histImg.originalUrl}
                               alt={histImg.name}
                               className="h-full w-full object-cover"
                               referrerPolicy="no-referrer"
@@ -2025,292 +1843,185 @@ export default function App() {
                       </div>
                     </div>
                   )}
+
                 </div>
+
               </div>
             )}
           </section>
         )}
 
-        {/* PRICING PLANS & ACQUISITION REGISTRATION PORTAL */}
-        <section
-          id="pricing-section"
-          className="bg-neutral-50/70 border-t border-neutral-150 py-16 md:py-24"
-        >
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {/* Headline */}
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <span className="inline-flex items-center space-x-1.5 rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600 uppercase tracking-widest mb-4">
-                <Sparkles className="h-3 w-3" />
-                <span>Premium AI Without Server Middlemen</span>
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight leading-tight">
-                Simple, Transparent{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-650">
-                  Pricing Plans
-                </span>
-              </h2>
-              <p className="mt-4 text-sm text-neutral-500 font-medium leading-relaxed">
-                Forget expensive cloud subscription fees. Because all AI
-                segmentation processes run entirely inside your private browser
-                sandbox using local processor power, we save on server costs —
-                and pass 100% of the savings back to you!
-              </p>
-            </div>
-
-            {/* Pricing Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch max-w-5xl mx-auto">
-              {/* Plan 1: Speed Draft */}
-              <div className="rounded-3xl border border-neutral-200 bg-white p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition duration-200 relative overflow-hidden">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-extrabold text-neutral-900 uppercase tracking-wider">
-                      🏃 Speed Draft
-                    </h3>
-                    <span className="text-[10px] uppercase font-mono font-bold text-neutral-400 bg-neutral-50 px-2 py-0.5 rounded border border-neutral-150">
-                      Basic
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-400 font-medium mt-1">
-                    Perfect for fast drafts & web-optimized shots.
-                  </p>
-
-                  <div className="mt-6 flex items-baseline">
-                    <span className="text-4xl font-black text-neutral-900 leading-none">
-                      $0
-                    </span>
-                    <span className="text-xs text-neutral-400 font-semibold ml-1">
-                      / forever
-                    </span>
-                  </div>
-
-                  <ul className="mt-8 space-y-4 text-xs font-medium text-neutral-550 border-t border-neutral-100 pt-6">
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>Quantized 8-bit weights (11 MB)</span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>
-                        Max resolution: <strong>800px</strong>
-                      </span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>100% Secure private offline sandbox</span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>Unlimited png exports</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="mt-8">
-                  <button
-                    type="button"
-                    onClick={() => handleNavClick("upload")}
-                    className="w-full py-3 px-4 rounded-xl border border-neutral-200 font-bold text-xs text-neutral-700 bg-neutral-50/50 hover:bg-neutral-100/80 active:scale-95 transition block text-center"
-                  >
-                    Start Instantly
-                  </button>
-                </div>
-              </div>
-
-              {/* Plan 2: Balanced Pro (Beta Promo highlighted) */}
-              <div className="rounded-3xl border-2 border-orange-500 bg-white p-8 flex flex-col justify-between shadow-md relative overflow-hidden transform md:-translate-y-2">
-                <span className="absolute top-3.5 right-3.5 rounded-full bg-orange-100 px-2 py-0.5 text-[9px] font-bold text-orange-600 uppercase tracking-wide">
-                  🔥 active offer
-                </span>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-extrabold text-orange-600 uppercase tracking-wider flex items-center gap-1">
-                      <span>✨ Balanced Pro</span>
-                    </h3>
-                    <span className="text-[10px] uppercase font-mono font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-150">
-                      Optimal
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-400 font-medium mt-1">
-                    Best for content creators and high-clarity portraits.
-                  </p>
-
-                  <div className="mt-6 flex items-baseline">
-                    <span className="text-4xl font-black text-neutral-900 leading-none">
-                      $0
-                    </span>
-                    <span className="text-xs text-neutral-400 font-bold line-through ml-2">
-                      $9
-                    </span>
-                    <span className="text-xs text-orange-600 font-bold ml-1.5">
-                      (Free Beta)
-                    </span>
-                  </div>
-
-                  <ul className="mt-8 space-y-4 text-xs font-medium text-neutral-600 border-t border-neutral-100 pt-6">
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>Precision 16-bit float maps (22 MB)</span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>
-                        Max high-res dimension: <strong>1600px</strong>
-                      </span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 text-orange-500 animate-pulse" />
-                      <span className="text-orange-950 font-bold">
-                        1-Click Smart Wand Refiner
-                      </span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>Keep Context Aspect Ratio feature</span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>Full manual background layers editing</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="mt-8">
-                  <button
-                    type="button"
-                    onClick={() => handleNavClick("upload")}
-                    className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white bg-orange-500 hover:bg-orange-600 shadow-md shadow-orange-500/15 active:scale-95 transition block text-center"
-                  >
-                    Unlock Balanced Pro
-                  </button>
-                </div>
-              </div>
-
-              {/* Plan 3: Professional Studio HD */}
-              <div className="rounded-3xl border border-neutral-200 bg-white p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition duration-200 relative overflow-hidden">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-extrabold text-neutral-900 uppercase tracking-wider">
-                      ⭐ Professional Studio HD
-                    </h3>
-                    <span className="text-[10px] uppercase font-mono font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded border border-purple-150">
-                      Top-end
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-400 font-medium mt-1">
-                    Ultimate quality maps for printing & developers.
-                  </p>
-
-                  <div className="mt-6 flex items-baseline">
-                    <span className="text-4xl font-black text-neutral-900 leading-none">
-                      $0
-                    </span>
-                    <span className="text-xs text-neutral-400 font-bold line-through ml-2">
-                      $19
-                    </span>
-                    <span className="text-xs text-purple-600 font-bold ml-1.5">
-                      (Free Beta)
-                    </span>
-                  </div>
-
-                  <ul className="mt-8 space-y-4 text-xs font-medium text-neutral-550 border-t border-neutral-100 pt-6">
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>Raw unquantized 32-bit floats (44 MB)</span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>
-                        Raw studio HD resolution: <strong>2800px</strong>
-                      </span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>Deep pixel boundaries segmentations</span>
-                    </li>
-                    <li className="flex items-center space-x-2.5">
-                      <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      <span>100% offline local model weights</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="mt-8">
-                  <button
-                    type="button"
-                    onClick={() => handleNavClick("upload")}
-                    className="w-full py-3 px-4 rounded-xl border border-neutral-200 font-bold text-xs text-neutral-700 bg-neutral-50/50 hover:bg-neutral-100/80 active:scale-95 transition block text-center"
-                  >
-                    Unlock Studio HD
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* USER ACQUISITION EMAIL NEWSLETTER PORTAL */}
-            <div className="max-w-3xl mx-auto w-full mt-16 bg-gradient-to-r from-neutral-900 to-neutral-800 rounded-3xl p-8 sm:p-10 shadow-lg text-white border border-neutral-800 text-center relative overflow-hidden">
-              <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-orange-500/10 blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
-
-              <span className="inline-flex items-center space-x-1 rounded-full bg-neutral-800 border border-neutral-700/65 px-2.5 py-0.5 text-[10px] font-extrabold text-orange-400 uppercase tracking-widest mb-4">
-                ✨ JOIN OUR PRIVATE BETA WAITLIST
-              </span>
-              <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white mb-2">
-                All Premium HD Features Unlocked for Free Today
-              </h3>
-              <p className="text-xs sm:text-sm text-neutral-400 font-medium max-w-xl mx-auto leading-relaxed mb-6">
-                Help us grow bgi remove! Stash your email to reserve your
-                permanent beta access spot and receive instant notices whenever
-                we drop new local edge segmentations models.
-              </p>
-
-              {isWaitlistSubmitted ? (
-                <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-2xl p-4.5 max-w-xl mx-auto flex items-center justify-center space-x-3 text-xs animate-fadeIn">
-                  <Check className="h-5 w-5 bg-emerald-500 text-neutral-900 rounded-full p-1 flex-shrink-0" />
-                  <span className="font-bold text-left">{waitlistMessage}</span>
-                </div>
-              ) : (
-                <form
-                  onSubmit={handleWaitlistSubmit}
-                  className="max-w-md mx-auto flex flex-col sm:flex-row gap-2.5"
-                >
-                  <input
-                    type="email"
-                    placeholder="Enter your email address..."
-                    value={waitlistEmail}
-                    onChange={(e) => setWaitlistEmail(e.target.value)}
-                    className="flex-1 min-w-0 rounded-xl bg-neutral-950/80 border border-neutral-800 px-4 py-3 text-xs text-white focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    className="rounded-xl bg-orange-500 px-6 py-3 font-extrabold text-xs text-white shadow-md shadow-orange-500/20 hover:bg-orange-400 active:scale-95 transition shrink-0"
-                  >
-                    Join Beta Waitlist
-                  </button>
-                </form>
-              )}
-
-              <p className="text-[10px] text-neutral-500 font-mono mt-4">
-                🔒 No credit card required. All data stays strictly
-                confidential. Zero spam guarantee.
-              </p>
-            </div>
-
-            {/* Real user counters to build high SaaS design fidelity */}
-            <div className="mt-12 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs font-semibold text-neutral-400 select-none">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                <span>
-                  <strong>14,210+</strong> active browsers sandbox processed
-                </span>
-              </span>
-              <span>•</span>
-              <span>🔒 Complete Local Privacy</span>
-              <span>•</span>
-              <span>⚡ WASM ONNX Multithreaded Acceleration</span>
-            </div>
+      {/* ENGINE ARCHITECTURES & PERFORMANCE STATIONS */}
+      <section id="pricing-section" className="bg-neutral-50 border-t border-neutral-150 py-16 md:py-20 text-neutral-800">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          
+          {/* Main heading */}
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight leading-tight">
+              Flexible Processing Profiles. <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">Zero Cost.</span>
+            </h2>
+            <p className="mt-4 text-sm text-neutral-500 font-medium leading-relaxed max-w-xl mx-auto">
+              Our editor performs all neural network segmentation locally in your browser sandbox. Enjoy high-performance background removal with no subscription fees or server wait queues.
+            </p>
           </div>
-        </section>
+
+          {/* Clean specifications layout */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch mb-16">
+            
+            {/* Speed Draft Profile */}
+            <div className="rounded-2xl border border-neutral-200 bg-white p-6 flex flex-col justify-between shadow-xs hover:border-neutral-300 transition duration-150">
+              <div>
+                <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-widest">Speed Draft</h3>
+                  <span className="text-[9px] font-mono font-bold text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded font-extrabold uppercase">Basic</span>
+                </div>
+                <p className="text-[11px] text-neutral-400 mt-2 font-medium">Highly optimized for instant web drafts and quick social media graphics.</p>
+                
+                <div className="mt-5">
+                  <div className="flex items-baseline">
+                    <span className="text-2xl font-extrabold text-neutral-900">$0</span>
+                    <span className="text-[10px] text-neutral-450 font-semibold ml-1">/ forever</span>
+                  </div>
+                </div>
+
+                <ul className="mt-6 space-y-3.5 text-xs font-semibold text-neutral-600">
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                    <span>8-bit quantized weights</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                    <span>Capped at 800px width</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                    <span>Runs locally on CPU/GPU</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mt-6.5">
+                <button
+                  type="button"
+                  onClick={() => handleNavClick('upload')}
+                  className="w-full py-2.5 px-3 rounded-lg border border-neutral-200 font-bold text-xs text-neutral-700 hover:bg-neutral-50 active:scale-98 transition block text-center"
+                >
+                  Apply Filter
+                </button>
+              </div>
+            </div>
+
+            {/* Balanced Pro Profile */}
+            <div className="rounded-2xl border-2 border-orange-500 bg-white p-6 flex flex-col justify-between shadow-xs relative font-sans">
+              <span className="absolute top-3 right-3 rounded-full bg-orange-100 px-2 py-0.5 text-[8px] font-bold text-orange-600 uppercase tracking-wide">
+                Active Offer
+              </span>
+              <div>
+                <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                  <h3 className="text-xs font-bold text-orange-600 uppercase tracking-widest">Balanced Pro</h3>
+                  <span className="text-[9px] font-mono font-bold text-orange-400 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 uppercase font-extrabold">Optimal</span>
+                </div>
+                <p className="text-[11px] text-neutral-400 mt-2 font-medium">The optimal balance of speed and perimeter accuracy for portrait cutouts.</p>
+                
+                <div className="mt-5">
+                  <div className="flex items-baseline">
+                    <span className="text-2xl font-extrabold text-neutral-900">$0</span>
+                    <span className="text-xs text-neutral-400 font-bold line-through ml-2">$9</span>
+                    <span className="text-[10px] text-orange-600 font-bold ml-1.5">(Free Beta)</span>
+                  </div>
+                </div>
+
+                <ul className="mt-6 space-y-3.5 text-xs font-semibold text-neutral-600">
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                    <span>Precision float16 neural engine</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                    <span>Processes up to 1600px size</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                    <span>1-click smart wand restoration</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mt-6.5">
+                <button
+                  type="button"
+                  onClick={() => setBetaModal({
+                    isOpen: true,
+                    profileName: 'Balanced Pro Engine',
+                    originalPrice: '$9.00 / month',
+                    targetMode: 'isnet_fp16',
+                    description: 'The Balanced Pro engine processes up to 1600px sizes using high precision float16 parameters for optimal portrait outline accuracy and speeds.'
+                  })}
+                  className="w-full py-2.5 px-3 rounded-lg font-bold text-xs text-white bg-orange-500 hover:bg-orange-600 active:scale-98 transition block text-center cursor-pointer"
+                >
+                  Activate Balanced
+                </button>
+              </div>
+            </div>
+
+            {/* Studio HD Profile */}
+            <div className="rounded-2xl border border-neutral-200 bg-white p-6 flex flex-col justify-between shadow-xs hover:border-neutral-300 transition duration-150">
+              <div>
+                <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-widest">Studio HD (4K)</h3>
+                  <span className="text-[9px] font-mono font-bold text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded font-extrabold uppercase font-semibold">Premium</span>
+                </div>
+                <p className="text-[11px] text-neutral-400 mt-2 font-medium">Full accuracy float32 neural maps for print-ready high resolution designs.</p>
+                
+                <div className="mt-5">
+                  <div className="flex items-baseline">
+                    <span className="text-2xl font-extrabold text-neutral-900">$0</span>
+                    <span className="text-xs text-neutral-400 font-bold line-through ml-2">$19</span>
+                    <span className="text-[10px] text-purple-600 font-bold ml-1.5">(Free Beta)</span>
+                  </div>
+                </div>
+
+                <ul className="mt-6 space-y-3.5 text-xs font-semibold text-neutral-600">
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                    <span>Full float32 accuracy matrix</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                    <span>Deep boundary edge detection</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                    <span>Maximum clarity up to 2800px</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mt-6.5">
+                <button
+                  type="button"
+                  onClick={() => setBetaModal({
+                    isOpen: true,
+                    profileName: 'Studio HD (4K) Engine',
+                    originalPrice: '$19.00 / month',
+                    targetMode: 'isnet',
+                    description: 'The Studio HD engine runs a complete float32 neural accuracy matrix to capture maximum boundary edges and fine details up to 2800px high-resolution width.'
+                  })}
+                  className="w-full py-2.5 px-3 rounded-lg border border-neutral-200 font-bold text-xs text-neutral-700 hover:bg-neutral-50 active:scale-98 transition block text-center cursor-pointer"
+                >
+                  Select Studio HD
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+              </>
+            )}
+          </>
+        )}
       </main>
 
       {/* FULL-SCREEN CANVAS BRUSH EDITOR DIALOG MODAL */}
@@ -2324,8 +2035,90 @@ export default function App() {
         />
       )}
 
+      {/* PROMOTIONAL FREE BETA POPUP DIALOG */}
+      {betaModal && betaModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs font-sans animate-fadeIn">
+          <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-xl animate-scaleIn">
+            
+            {/* Elegant header banner with sparkle */}
+            <div className="bg-gradient-to-r from-orange-500 to-red-600 p-6 text-white text-center relative overflow-hidden">
+              <div className="absolute top-4 right-4">
+                <button
+                  type="button"
+                  onClick={() => setBetaModal(null)}
+                  className="rounded-full bg-white/10 p-1.5 text-white hover:bg-white/20 transition-colors cursor-pointer-none focus:outline-none"
+                  aria-label="Close modal"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="mx-auto h-12 w-12 rounded-full bg-white/20 flex items-center justify-center mb-3">
+                <Sparkles className="h-6 w-6 text-yellow-300 animate-pulse" />
+              </div>
+              <h3 className="text-lg font-extrabold tracking-tight">Free Beta Premium Access</h3>
+              <p className="text-[10px] text-orange-100 mt-1 uppercase tracking-widest font-bold">Active Promo Period</p>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <div className="text-center mb-5">
+                <div className="text-neutral-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">UNLOCKED ENGINE</div>
+                <h4 className="text-xl font-extrabold text-neutral-900 tracking-tight">{betaModal.profileName}</h4>
+                
+                <div className="mt-4.5 inline-flex items-center space-x-2 bg-neutral-50 px-3.5 py-2 rounded-xl border border-neutral-100">
+                  <span className="text-neutral-400 line-through text-xs font-bold font-mono">{betaModal.originalPrice}</span>
+                  <span className="text-neutral-300 font-mono text-[11px] font-semibold">→</span>
+                  <span className="text-orange-650 font-black text-sm font-mono">$0.00</span>
+                  <span className="text-orange-600 font-extrabold text-[9px] bg-orange-50 border border-orange-100 rounded-lg px-2 py-0.5 tracking-wider uppercase font-sans">100% Free Beta</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-neutral-500 font-medium leading-relaxed text-center mb-6">
+                {betaModal.description} All computations perform directly inside your secure local browser sandbox. Enjoy unlimited edits with zero fees.
+              </p>
+
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetMode = betaModal.targetMode;
+                    setQualityMode(targetMode);
+                    setBetaModal(null);
+                    
+                    // Reprocess active picture if exists:
+                    if (currentImage) {
+                      const source = currentImage.originalFile || currentImage.originalUrl;
+                      if (source) {
+                        setTimeout(() => {
+                          processImage(source, currentImage.name);
+                        }, 50);
+                      }
+                    }
+                    
+                    // Route user to Workspace
+                    handleNavClick('upload');
+                  }}
+                  className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white bg-orange-500 hover:bg-orange-600 shadow-md shadow-orange-500/10 active:scale-98 transition text-center block cursor-pointer"
+                >
+                  Activate & Process for Free
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBetaModal(null)}
+                  className="w-full py-2.5 px-3 rounded-xl border border-neutral-200 font-bold text-[11px] text-neutral-550 hover:text-neutral-800 hover:bg-neutral-50 active:scale-98 transition text-center block cursor-pointer"
+                >
+                  Close & Explore Options
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* Trust & Local computing banner footer section */}
-      <Footer />
+      <Footer onNavClick={handleNavClick} />
+
     </div>
   );
 }

@@ -74,13 +74,13 @@ export default function CompareSlider({
   return (
     <div
       ref={containerRef}
-      className={`relative select-none overflow-hidden rounded-xl border border-neutral-200 shadow-sm ${className}`}
+      className={`relative select-none overflow-hidden rounded-xl border border-zinc-800 shadow-sm ${className}`}
       onMouseMove={handleMouseMove}
       onTouchMove={handleTouchMove}
       id="compare-slider-container"
     >
       {/* Original Image (Right side / Base) */}
-      <div className="absolute inset-0 h-full w-full bg-neutral-100">
+      <div className="absolute inset-0 h-full w-full bg-zinc-950">
         <img
           src={originalUrl}
           alt="Original"
@@ -111,11 +111,11 @@ export default function CompareSlider({
           {/* Transparent Grid Pattern if requested */}
           <div
             className={`absolute inset-0 h-full w-full ${
-              hasTransparentGrid ? 'bg-checkerboard' : 'bg-neutral-50'
+              hasTransparentGrid ? 'bg-checkerboard' : 'bg-zinc-900'
             }`}
             style={{
               backgroundImage: hasTransparentGrid
-                ? 'radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(240,240,240,1) 100%)'
+                ? 'radial-gradient(ellipse at center, rgba(30,30,30,1) 0%, rgba(15,15,15,1) 100%)'
                 : 'none',
             }}
           >
@@ -167,8 +167,8 @@ export default function CompareSlider({
         }}
         id="slider-divider"
       >
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white border border-neutral-300 shadow-lg flex items-center justify-center pointer-events-none transition-transform group-hover:scale-110 active:scale-95">
-          <div className="flex space-x-1 text-neutral-500 font-bold select-none text-sm">
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-zinc-900 border border-zinc-700 shadow-lg flex items-center justify-center pointer-events-none transition-transform group-hover:scale-110 active:scale-95">
+          <div className="flex space-x-1 text-zinc-300 font-bold select-none text-sm">
             <span>‹</span>
             <span>›</span>
           </div>

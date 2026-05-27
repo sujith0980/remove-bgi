@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7F27" />
+      <stop offset="100%" stop-color="#ED1C24" />
+    </linearGradient>
+  </defs>
+  <!-- Rounded APP ICON Background exactly like the images -->
+  <rect width="512" height="512" rx="128" fill="url(#orangeGrad)" />
+  
+  <!-- Clean white scissor vector graphic centered -->
+  <g transform="translate(96, 96) scale(6.5)" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Finger Rings -->
+    <circle cx="16" cy="12" r="6" />
+    <circle cx="16" cy="36" r="6" />
+    <!-- Pivot Joint point -->
+    <circle cx="28" cy="24" r="1.5" fill="#FFFFFF" />
+    <!-- Scissors Blades -->
+    <line x1="22" y1="18" x2="42" y2="38" />
+    <line x1="22" y1="30" x2="42" y2="10" />
+  </g>
+</svg>

@@ -5,7 +5,7 @@ export interface ProcessedImage {
   width: number;
   height: number;
   originalUrl: string;
-  originalFile?: File; // Keep reference to file if uploaded
+  originalFile?: File | Blob; // Keep reference to file if uploaded
   processedUrl?: string; // The masked output from @imgly/background-removal (transparent bg)
   processedBlob?: Blob; // Keep mask blob
   editedUrl?: string; // If manually erased/restored, this holds the custom canvas data url/blob
