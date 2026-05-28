@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
-import { Mail, ShieldCheck, Cpu, Copy, Check, ChevronDown, HelpCircle } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Mail,
+  ShieldCheck,
+  Cpu,
+  Copy,
+  Check,
+  ChevronDown,
+  HelpCircle,
+} from "lucide-react";
 
 interface AboutContactProps {
-  initialTab?: 'about' | 'contact' | 'faq';
+  initialTab?: "about" | "contact" | "faq";
 }
 
 interface FAQItem {
@@ -10,15 +18,19 @@ interface FAQItem {
   answer: string;
 }
 
-export default function AboutContact({ initialTab = 'about' }: AboutContactProps) {
-  const [activeTab, setActiveTab] = useState<'about' | 'contact' | 'faq'>(initialTab);
+export default function AboutContact({
+  initialTab = "about",
+}: AboutContactProps) {
+  const [activeTab, setActiveTab] = useState<"about" | "contact" | "faq">(
+    initialTab,
+  );
   const [copied, setCopied] = useState(false);
 
   // Accordion state
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText('contact@bgiremove.com');
+    navigator.clipboard.writeText("contact@bgiremove.com");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -26,28 +38,80 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
   const faqs: FAQItem[] = [
     {
       question: "Is BGI Remove really completely free with zero limits?",
-      answer: "Yes, 100% free! Traditional background removers charge expensive platform subscription credits or restrict high-resolution downloads. Because BGI Remove processes images directly in your own browser utilizing your own system's graphics capability, we have zero server CPU overhead. We do not place watermarks, throttle high-definitions, or charge hidden fees."
+      answer:
+        "Yes, 100% free! Traditional background removers charge expensive platform subscription credits or restrict high-resolution downloads. Because BGI Remove processes images directly in your own browser utilizing your own system's graphics capability, we have zero server CPU overhead. We do not place watermarks, throttle high-definitions, or charge hidden fees.",
     },
     {
       question: "Are my photos uploaded to any external servers?",
-      answer: "Absolutely not. In accordance with our '100% Privacy-First' standard, no image data or metadata is ever transmitted to a database, cloud server, or remote computer. Everything—from automatic model inferencing to manual brush adjustment—happens strictly inside your local web browser sandbox."
+      answer:
+        "Absolutely not. In accordance with our '100% Privacy-First' standard, no image data or metadata is ever transmitted to a database, cloud server, or remote computer. Everything—from automatic model inferencing to manual brush adjustment—happens strictly inside your local web browser sandbox.",
     },
     {
       question: "Can I use BGI Remove offline?",
-      answer: "Yes! Once you visit BGI Remove for the first time, your browser caches the core layout assets and the lightweight neural segmenting weight layers (approx. ~20MB). After the initial download, you can open our portal and remove, blur, or customize image backdrops fully offline with zero internet access."
+      answer:
+        "Yes! Once you visit BGI Remove for the first time, your browser caches the core layout assets and the lightweight neural segmenting weight layers (approx. ~20MB). After the initial download, you can open our portal and remove, blur, or customize image backdrops fully offline with zero internet access.",
     },
     {
       question: "How does the local browser background segmenting work?",
-      answer: "We use standard ONNX (Open Neural Network Exchange) models configured with WebAssembly (WASM) multi-threading filter chains. When you drop an image, the model computes segmentation arrays locally, isolating the frontmost subject from background artifacts in milliseconds."
+      answer:
+        "We use standard ONNX (Open Neural Network Exchange) models configured with WebAssembly (WASM) multi-threading filter chains. When you drop an image, the model computes segmentation arrays locally, isolating the frontmost subject from background artifacts in milliseconds.",
     },
     {
       question: "What should I do if the automatic cut misses fine details?",
-      answer: "We have built a premium interactive 'Manual Brush' editor natively into our web software. Simply switch to the sandbox brush tab to restore missed hairs, erase unwanted background pixels, or refine complex transparencies with precision."
+      answer:
+        "We have built a premium interactive 'Manual Brush' editor natively into our web software. Simply switch to the sandbox brush tab to restore missed hairs, erase unwanted background pixels, or refine complex transparencies with precision.",
     },
     {
-      question: "Do you offer direct API integration or commercial subscriptions?",
-      answer: "Because we prioritize decentralized computing, we do not host a REST API server. However, if you would like custom integrations, unique regional biometric passport weights, or need enterprise guidance, feel free to contact us directly at contact@bgiremove.com."
-    }
+      question:
+        "Do you offer direct API integration or commercial subscriptions?",
+      answer:
+        "Because we prioritize decentralized computing, we do not host a REST API server. However, if you would like custom integrations, unique regional biometric passport weights, or need enterprise guidance, feel free to contact us directly at contact@bgiremove.com.",
+    },
+    {
+      question: "What image formats does BGI Remove support?",
+      answer:
+        "BGI Remove supports JPG, PNG, GIF, and WebP formats. You can upload images up to 50MB in size. When exporting, you can save as PNG (with transparency) or JPG formats at various resolutions up to 4K quality.",
+    },
+    {
+      question: "How accurate is the background removal?",
+      answer:
+        "BGI Remove uses advanced AI models trained on millions of images with 99%+ accuracy on most subjects. For complex subjects like fine hair or intricate objects, the accuracy is around 95%. You can always use our brush editor tool for fine-tuning results if needed.",
+    },
+    {
+      question: "Can I use BGI Remove for commercial purposes?",
+      answer:
+        "Yes! You can use BGI Remove for any commercial purpose including e-commerce product photos, professional headshots, print materials, and reselling processed images. Since the tool is free, you can use outputs in commercial projects without restrictions.",
+    },
+    {
+      question: "How long does background removal take?",
+      answer:
+        "BGI Remove typically processes images in 0.5-2 seconds depending on your device's processing power and image size. The entire process is instant—you see results immediately after upload with no waiting time.",
+    },
+    {
+      question: "What if the background removal isn't perfect?",
+      answer:
+        "Use our advanced Brush Editor tool to manually refine edges and fix any imperfections. You can paint areas to keep or remove, adjust brush size for precision, and preview changes in real-time. Most imperfections can be easily fixed in seconds.",
+    },
+    {
+      question: "Can I add a new background after removing the original?",
+      answer:
+        "Absolutely! After removing the background, you can apply solid colors, use our preset gradients, or upload your own background image. You can also keep the transparent background as PNG. Choose whatever works best for your use case.",
+    },
+    {
+      question: "Does BGI Remove work on mobile devices?",
+      answer:
+        "Yes! BGI Remove works on all modern smartphones and tablets (iOS and Android) through your mobile browser. Just visit our website from your phone's browser. The interface is optimized for touch and works smoothly on mobile devices.",
+    },
+    {
+      question: "Do you have a desktop app or plugin?",
+      answer:
+        "Currently, BGI Remove is web-based only and works through any modern web browser. No installation required. We're exploring desktop and plugin options for future releases. Check back for updates!",
+    },
+    {
+      question: "What makes BGI Remove different from other tools?",
+      answer:
+        "BGI Remove offers: 100% free unlimited usage, complete privacy (client-side processing), no watermarks, advanced brush editor, instant results (0.5-2 sec), up to 4K resolution, offline capability after loading, and a simple beautiful interface. Most competitors charge fees, add watermarks, or store your data.",
+    },
   ];
 
   const toggleFaq = (idx: number) => {
@@ -56,36 +120,35 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8 py-12 md:py-16 font-sans">
-      
       {/* Tab Switcher */}
       <div className="flex justify-center mb-10">
         <div className="inline-flex rounded-xl bg-zinc-900 p-1 border border-zinc-800">
           <button
-            onClick={() => setActiveTab('about')}
+            onClick={() => setActiveTab("about")}
             className={`px-4 sm:px-5 py-2 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'about'
-                ? 'bg-zinc-800 text-white shadow-xs'
-                : 'text-zinc-400 hover:text-zinc-100'
+              activeTab === "about"
+                ? "bg-zinc-800 text-white shadow-xs"
+                : "text-zinc-400 hover:text-zinc-100"
             }`}
           >
             About BGI Remove
           </button>
           <button
-            onClick={() => setActiveTab('contact')}
+            onClick={() => setActiveTab("contact")}
             className={`px-4 sm:px-5 py-2 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'contact'
-                ? 'bg-zinc-800 text-white shadow-xs'
-                : 'text-zinc-400 hover:text-zinc-100'
+              activeTab === "contact"
+                ? "bg-zinc-800 text-white shadow-xs"
+                : "text-zinc-400 hover:text-zinc-100"
             }`}
           >
             Contact & Support
           </button>
           <button
-            onClick={() => setActiveTab('faq')}
+            onClick={() => setActiveTab("faq")}
             className={`px-4 sm:px-5 py-2 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'faq'
-                ? 'bg-zinc-800 text-white shadow-xs'
-                : 'text-zinc-400 hover:text-zinc-100'
+              activeTab === "faq"
+                ? "bg-zinc-800 text-white shadow-xs"
+                : "text-zinc-400 hover:text-zinc-100"
             }`}
           >
             FAQs Accordion
@@ -94,16 +157,26 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
       </div>
 
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 sm:p-10 shadow-xs">
-        {activeTab === 'about' ? (
+        {activeTab === "about" ? (
           <div className="space-y-8 animate-fadeIn">
             {/* About Top Header */}
             <div>
-              <span className="text-[10px] uppercase font-mono font-bold text-orange-400 tracking-wider">our origin & mission</span>
+              <span className="text-[10px] uppercase font-mono font-bold text-orange-400 tracking-wider">
+                our origin & mission
+              </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1 animate-fadeIn">
                 Local Serverless Graphic Processing
               </h2>
               <p className="mt-4 text-sm text-zinc-400 leading-relaxed">
-                BGI Remove was founded with a single paradigm in mind: <strong>your photos should never leave your personal computer.</strong> Traditional background removal tools force you to upload high-definition images to remote databases, generating server costs, bandwidth consumption, and privacy vulnerabilities. We designed BGI Remove as an alternative model of modern browser-side computing.
+                BGI Remove was founded with a single paradigm in mind:{" "}
+                <strong>
+                  your photos should never leave your personal computer.
+                </strong>{" "}
+                Traditional background removal tools force you to upload
+                high-definition images to remote databases, generating server
+                costs, bandwidth consumption, and privacy vulnerabilities. We
+                designed BGI Remove as an alternative model of modern
+                browser-side computing.
               </p>
             </div>
 
@@ -115,7 +188,9 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
                   <h3 className="text-sm">100% Privacy Absolute</h3>
                 </div>
                 <p className="text-xs text-zinc-450 leading-relaxed">
-                  We don't maintain file hosts or transfer image databases. All segmented matrices and neural model inferences are computed locally on your system hardware. Your records remain private.
+                  We don't maintain file hosts or transfer image databases. All
+                  segmented matrices and neural model inferences are computed
+                  locally on your system hardware. Your records remain private.
                 </p>
               </div>
 
@@ -125,26 +200,38 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
                   <h3 className="text-sm">High Precision Neural Nets</h3>
                 </div>
                 <p className="text-xs text-zinc-450 leading-relaxed">
-                  Utilizing state-of-the-art ONNX runtime architectures compiled via WebAssembly, we convert complex segmentation layers into multi-threaded browser queries for real-time edge processing.
+                  Utilizing state-of-the-art ONNX runtime architectures compiled
+                  via WebAssembly, we convert complex segmentation layers into
+                  multi-threaded browser queries for real-time edge processing.
                 </p>
               </div>
             </div>
 
             {/* Detailed Company Section */}
             <div className="space-y-4 pt-6 border-t border-zinc-850">
-              <h4 className="text-sm font-bold text-zinc-100">Democratizing Creative Tools</h4>
+              <h4 className="text-sm font-bold text-zinc-100">
+                Democratizing Creative Tools
+              </h4>
               <p className="text-xs text-zinc-450 leading-relaxed">
-                We believe that premium photo-editing and transparency matting tools should not require expensive, recurring software subscriptions. Whether you are generating professional passport photos, white-background product listings for Amazon and Shopify, or high-definition marketing designs, BGI Remove provides advanced tools entirely free of charge.
+                We believe that premium photo-editing and transparency matting
+                tools should not require expensive, recurring software
+                subscriptions. Whether you are generating professional passport
+                photos, white-background product listings for Amazon and
+                Shopify, or high-definition marketing designs, BGI Remove
+                provides advanced tools entirely free of charge.
               </p>
               <div className="p-4 bg-orange-500/10 rounded-xl border border-orange-500/20 text-xs text-orange-300 font-semibold leading-relaxed">
-                🚀 Enjoying BGI Remove? We are continuously training newer, faster, light-weight local models to tackle complex subjects like wind-blown hair and transparent glass. Spread the word to help us support the free serverless community.
+                🚀 Enjoying BGI Remove? We are continuously training newer,
+                faster, light-weight local models to tackle complex subjects
+                like wind-blown hair and transparent glass. Spread the word to
+                help us support the free serverless community.
               </div>
             </div>
-            
+
             {/* Quick Button to go to Contact */}
             <div className="flex justify-end pt-4">
               <button
-                onClick={() => setActiveTab('faq')}
+                onClick={() => setActiveTab("faq")}
                 className="text-xs font-bold text-zinc-400 hover:text-orange-400 flex items-center gap-1.5 transition-colors"
               >
                 <span>Read common FAQs</span>
@@ -152,16 +239,21 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
               </button>
             </div>
           </div>
-        ) : activeTab === 'contact' ? (
+        ) : activeTab === "contact" ? (
           <div className="space-y-8 animate-fadeIn">
             {/* Contact Top Header */}
             <div>
-              <span className="text-[10px] uppercase font-mono font-bold text-orange-400 tracking-wider">direct inquiry channels</span>
+              <span className="text-[10px] uppercase font-mono font-bold text-orange-400 tracking-wider">
+                direct inquiry channels
+              </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1 animate-fadeIn">
                 Get in Touch with our Team
               </h2>
               <p className="mt-4 text-sm text-zinc-400 leading-relaxed">
-                Have a feature request, spotted a model error, or want to integrate our client-side background removal technology into your own platform? You can reach us directly via email. We read every incoming message and love technical feedback.
+                Have a feature request, spotted a model error, or want to
+                integrate our client-side background removal technology into
+                your own platform? You can reach us directly via email. We read
+                every incoming message and love technical feedback.
               </p>
             </div>
 
@@ -172,8 +264,12 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
                   <Mail className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-extrabold text-zinc-100">Official Support Channel</p>
-                  <p className="text-xs font-bold text-zinc-400 font-mono">contact@bgiremove.com</p>
+                  <p className="text-xs font-extrabold text-zinc-100">
+                    Official Support Channel
+                  </p>
+                  <p className="text-xs font-bold text-zinc-400 font-mono">
+                    contact@bgiremove.com
+                  </p>
                 </div>
               </div>
 
@@ -202,11 +298,11 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
                 </a>
               </div>
             </div>
-            
+
             {/* Quick Button to go to FAQs */}
             <div className="flex justify-end pt-4 border-t border-zinc-850">
               <button
-                onClick={() => setActiveTab('faq')}
+                onClick={() => setActiveTab("faq")}
                 className="text-xs font-bold text-zinc-400 hover:text-orange-400 flex items-center gap-1.5 transition-colors"
               >
                 <span>Read our FAQs</span>
@@ -218,12 +314,16 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
           <div className="space-y-8 animate-fadeIn">
             {/* FAQ Top Header */}
             <div>
-              <span className="text-[10px] uppercase font-mono font-bold text-orange-400 tracking-wider">knowledge base</span>
+              <span className="text-[10px] uppercase font-mono font-bold text-orange-400 tracking-wider">
+                knowledge base
+              </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1 animate-fadeIn">
                 Frequently Asked Questions
               </h2>
               <p className="mt-4 text-sm text-zinc-400 leading-relaxed">
-                Find answers to common questions about BGI Remove's advanced browser-side neural models, privacy-focused sandboxing, export quality, and offline performance.
+                Find answers to common questions about BGI Remove's advanced
+                browser-side neural models, privacy-focused sandboxing, export
+                quality, and offline performance.
               </p>
             </div>
 
@@ -233,12 +333,12 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
                 const isOpen = openFaqIndex === idx;
 
                 return (
-                  <div 
+                  <div
                     key={idx}
                     className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
-                      isOpen 
-                        ? 'border-orange-500/35 bg-orange-500/5 ring-1 ring-orange-500/10' 
-                        : 'border-zinc-800 bg-zinc-950 hover:bg-zinc-900/55'
+                      isOpen
+                        ? "border-orange-500/35 bg-orange-500/5 ring-1 ring-orange-500/10"
+                        : "border-zinc-800 bg-zinc-950 hover:bg-zinc-900/55"
                     }`}
                   >
                     <button
@@ -247,14 +347,16 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
                       className="w-full flex items-center justify-between p-5 text-left font-bold text-zinc-100 text-xs sm:text-sm select-none gap-4"
                     >
                       <span>{faq.question}</span>
-                      <ChevronDown className={`h-4 w-4 text-zinc-450 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-orange-400' : ''}`} />
+                      <ChevronDown
+                        className={`h-4 w-4 text-zinc-450 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180 text-orange-400" : ""}`}
+                      />
                     </button>
 
-                    <div 
+                    <div
                       className={`transition-all duration-200 border-zinc-850 ${
-                        isOpen 
-                          ? 'max-h-[300px] border-t p-5 text-xs text-zinc-300 leading-relaxed' 
-                          : 'max-h-0 pointer-events-none text-[0px] p-0 border-t-0'
+                        isOpen
+                          ? "max-h-[300px] border-t p-5 text-xs text-zinc-300 leading-relaxed"
+                          : "max-h-0 pointer-events-none text-[0px] p-0 border-t-0"
                       }`}
                     >
                       {faq.answer}
@@ -271,7 +373,7 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
               </p>
               <button
                 type="button"
-                onClick={() => setActiveTab('contact')}
+                onClick={() => setActiveTab("contact")}
                 className="rounded-xl px-4 py-2 border border-zinc-800 text-xs font-bold text-zinc-350 hover:text-orange-400 hover:bg-zinc-800 transition active:scale-98"
               >
                 Go to Direct Contact Form
