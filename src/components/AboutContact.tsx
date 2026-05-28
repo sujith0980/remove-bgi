@@ -47,6 +47,42 @@ export default function AboutContact({ initialTab = 'about' }: AboutContactProps
     {
       question: "Do you offer direct API integration or commercial subscriptions?",
       answer: "Because we prioritize decentralized computing, we do not host a REST API server. However, if you would like custom integrations, unique regional biometric passport weights, or need enterprise guidance, feel free to contact us directly at contact@bgiremove.com."
+    },
+    {
+      question: "What image formats does BGI Remove support?",
+      answer: "BGI Remove supports JPG, PNG, GIF, and WebP formats. You can upload images up to 50MB in size. When exporting, you can save as PNG (with transparency) or JPG formats at various resolutions up to 4K quality."
+    },
+    {
+      question: "How accurate is the background removal?",
+      answer: "BGI Remove uses advanced AI models trained on millions of images with 99%+ accuracy on most subjects. For complex subjects like fine hair or intricate objects, the accuracy is around 95%. You can always use our brush editor tool for fine-tuning results if needed."
+    },
+    {
+      question: "Can I use BGI Remove for commercial purposes?",
+      answer: "Yes! You can use BGI Remove for any commercial purpose including e-commerce product photos, professional headshots, print materials, and reselling processed images. Since the tool is free, you can use outputs in commercial projects without restrictions."
+    },
+    {
+      question: "How long does background removal take?",
+      answer: "BGI Remove typically processes images in 0.5-2 seconds depending on your device's processing power and image size. The entire process is instant—you see results immediately after upload with no waiting time."
+    },
+    {
+      question: "What if the background removal isn't perfect?",
+      answer: "Use our advanced Brush Editor tool to manually refine edges and fix any imperfections. You can paint areas to keep or remove, adjust brush size for precision, and preview changes in real-time. Most imperfections can be easily fixed in seconds."
+    },
+    {
+      question: "Can I add a new background after removing the original?",
+      answer: "Absolutely! After removing the background, you can apply solid colors, use our preset gradients, or upload your own background image. You can also keep the transparent background as PNG. Choose whatever works best for your use case."
+    },
+    {
+      question: "Does BGI Remove work on mobile devices?",
+      answer: "Yes! BGI Remove works on all modern smartphones and tablets (iOS and Android) through your mobile browser. Just visit our website from your phone's browser. The interface is optimized for touch and works smoothly on mobile devices."
+    },
+    {
+      question: "Do you have a desktop app or plugin?",
+      answer: "Currently, BGI Remove is web-based only and works through any modern web browser. No installation required. We're exploring desktop and plugin options for future releases. Check back for updates!"
+    },
+    {
+      question: "What makes BGI Remove different from other tools?",
+      answer: "BGI Remove offers: 100% free unlimited usage, complete privacy (client-side processing), no watermarks, advanced brush editor, instant results (0.5-2 sec), up to 4K resolution, offline capability after loading, and a simple beautiful interface. Most competitors charge fees, add watermarks, or store your data."
     }
   ];
 
