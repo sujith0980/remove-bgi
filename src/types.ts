@@ -15,7 +15,7 @@ export interface ProcessedImage {
   error?: string;
 }
 
-export type BackgroundType = 'transparent' | 'color' | 'image';
+export type BackgroundType = 'transparent' | 'color' | 'gradient' | 'image' | 'ai';
 
 export interface BackgroundPreset {
   id: string;
@@ -33,4 +33,5 @@ export interface EditorSettings {
   blurValue: number; // in pixels (0 for none, up to 20)
   brushType: 'erase' | 'restore';
   brushSize: number; // 5 to 100
+  shadowValue?: number; // drop shadow blur radius (0 to 40px)
 }

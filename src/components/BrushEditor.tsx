@@ -388,7 +388,7 @@ export default function BrushEditor({
       {/* Header */}
       <header className="flex items-center justify-between border-b border-neutral-800 bg-neutral-950 px-6 py-4">
         <div className="flex items-center space-x-3">
-          <div className="rounded-lg bg-orange-600 p-1.5">
+          <div className="rounded-lg bg-indigo-600 p-1.5">
             <Scissors className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -424,7 +424,7 @@ export default function BrushEditor({
         <div
           ref={cursorRef}
           style={{ display: 'none' }}
-          className="pointer-events-none fixed z-50 rounded-full border border-orange-500 bg-orange-500/20 -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
+          className="pointer-events-none fixed z-50 rounded-full border border-indigo-505 bg-indigo-500/20 -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
         />
 
         {/* Left Side Tool Options (Sidebar) */}
@@ -438,7 +438,7 @@ export default function BrushEditor({
                   onClick={() => setBrushMode('erase')}
                   className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${
                     brushMode === 'erase'
-                      ? 'border-orange-500 bg-orange-500/10 text-orange-400 shadow-md'
+                      ? 'border-indigo-550 bg-indigo-500/10 text-indigo-400 shadow-md'
                       : 'border-neutral-800 bg-neutral-900/50 text-neutral-400 hover:bg-neutral-900 hover:text-white'
                   }`}
                   id="editor-btn-erase"
@@ -484,7 +484,7 @@ export default function BrushEditor({
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-semibold uppercase tracking-wider text-neutral-400">Brush Size</span>
-                  <span className="font-mono text-orange-400 text-sm font-bold bg-neutral-900 px-2 py-0.5 rounded border border-neutral-800">
+                  <span className="font-mono text-indigo-400 text-sm font-bold bg-neutral-900 px-2 py-0.5 rounded border border-neutral-800">
                     {brushSize}px
                   </span>
                 </div>
@@ -494,14 +494,14 @@ export default function BrushEditor({
                   max="100"
                   value={brushSize}
                   onChange={(e) => setBrushSize(Number(e.target.value))}
-                  className="w-full accent-orange-500 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
+                  className="w-full accent-indigo-600 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
                   id="brush-size-range"
                 />
                 <div className="flex items-center justify-center h-20 bg-neutral-900/35 rounded-lg border border-neutral-850 overflow-hidden relative">
                   {/* Visual Circle Indicator of brush size */}
                   <div
                     className={`rounded-full border border-dashed transition-all ${
-                      brushMode === 'erase' ? 'border-orange-500/80 bg-orange-500/10' : 'border-emerald-500/80 bg-emerald-500/10'
+                      brushMode === 'erase' ? 'border-indigo-500/80 bg-indigo-500/10' : 'border-emerald-500/80 bg-emerald-500/10'
                     }`}
                     style={{
                       width: `${brushSize}px`,
@@ -569,7 +569,7 @@ export default function BrushEditor({
           {/* Guidelines */}
           <div className="mt-8 border-t border-neutral-850 pt-5 text-xs text-neutral-500 space-y-2.5">
             <h4 className="font-semibold text-neutral-400">Pro Tips:</h4>
-            <p>• Use <span className="font-semibold text-orange-400">Erase</span> to shave off stray background halos or fuzzy hair areas.</p>
+            <p>• Use <span className="font-semibold text-indigo-400">Erase</span> to shave off stray background halos or fuzzy hair areas.</p>
             <p>• Use <span className="font-semibold text-emerald-400">Restore</span> to retrieve missed shirt straps, details, or items.</p>
             <p>• Double finger pinch on touch screens, or use the zoom buttons to inspect detailed layouts.</p>
           </div>
@@ -611,7 +611,7 @@ export default function BrushEditor({
 
           {!isImageLoaded ? (
             <div className="flex flex-col items-center space-y-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
               <p className="text-sm text-neutral-400">Setting up drawing board...</p>
             </div>
           ) : (

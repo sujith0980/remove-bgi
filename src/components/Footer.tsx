@@ -59,7 +59,7 @@ export default function Footer({ onNavClick }: FooterProps) {
           
           {/* Col 1: Brand Info */}
           <div>
-            <span className="font-extrabold text-zinc-100 tracking-tight text-sm uppercase block mb-3">bgi remove</span>
+            <span className="font-extrabold text-zinc-100 tracking-tight text-sm uppercase block mb-3">BGIRemove</span>
             <p className="text-zinc-400 leading-relaxed">
               The premium, 100% serverless, zero-subscription cost background remover. Providing pristine graphics, solid studio white backdrops, and advanced pixel restoration brushes.
             </p>
@@ -177,7 +177,7 @@ export default function Footer({ onNavClick }: FooterProps) {
 
         {/* Bottom copyright trail */}
         <div className="border-t border-zinc-800 pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500">
-          <p>© 2026 bgi remove. All rights reserved. Created for on-demand background removal.</p>
+          <p>© 2026 BGIRemove. All rights reserved. Created for on-demand background removal.</p>
           <div className="flex space-x-3 mt-4 md:mt-0 font-medium">
             <span className="hover:text-zinc-300 transition cursor-pointer" onClick={() => handleLink('about')}>About us</span>
             <span>•</span>

@@ -1,6 +1,6 @@
 {
-  "name": "BGI Remove",
-  "description": "An interactive background removal web application like remove.bg, featuring responsive sliding comparison, solid color and image backgrounds, full manual brush eraser/restore, and batch processing.",
+  "name": "BGIRemove",
+  "description": "BGI Remove is an offline-first browser backdrop removal suite with high-precision manual fine-tune brush editors, and a promptable Gemini AI backdrop generator.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
